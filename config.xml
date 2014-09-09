@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <widget xmlns   = "http://www.w3.org/ns/widgets"
+        xmlns:gap   = "http://phonegap.com/ns/1.0"
+        id          = "com.braincomic.tafelkampioen"
+        versionCode = "0" 
+        version     = "1.0.0" >
+
+    <!-- versionCode is optional and Android only -->
+
+    <name>Tafelkampioen</name>
+
+    <description>
+        Leer de tafels van vermenigvuldiging.
+    </description>
+
+    <author href="http://www.braincomic.com" email="bram.minnaert@gmail.com">
+        Bram Minnaert
+    </author>
+    
+    <!--
+        If you do not want any permissions to be added to your app, add the
+        following tag to your config.xml; you will still have the INTERNET
+        permission on your app, which PhoneGap requires.
+    -->
+    <preference name="permissions"                value="none"/>
+    
+    <icon src="icon-full.png" />
+    <!--
+    <icon src="res/icon/android/icon-36-ldpi.png"   gap:platform="android"    gap:density="ldpi" />
+    <icon src="res/icon/android/icon-48-mdpi.png"   gap:platform="android"    gap:density="mdpi" />
+    <icon src="res/icon/android/icon-72-hdpi.png"   gap:platform="android"    gap:density="hdpi" />
+    <icon src="res/icon/android/icon-96-xhdpi.png"  gap:platform="android"    gap:density="xhdpi" />
+    -->
+    
+    <!-- disable settings button -->
+    <preference name="android-targetSdkVersion" value="14" />
+    
+</widget>
+
+    
