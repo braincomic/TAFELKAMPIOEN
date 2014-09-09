@@ -2,10 +2,11 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css">
+<link rel="stylesheet" href="lib/jquery.mobile.custom.structure.min.css">
+<link rel="stylesheet" href="lib/jquery.mobile.custom.theme.min.css">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
-<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+<script src="lib/jquery-1.11.1.min.js"></script>
+<script src="lib/jquery.mobile.custom.min.js"></script>
 
 <!-- 
 
@@ -617,6 +618,8 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   	var correctAnswerAsInt = listOfQuestions[questionNr][2]
   	var correctAnswerString = ""+correctAnswerAsInt;
   	console.log("clicked on number "+numberClicked+", until now: "+newAnswerAsString+", correct answer: "+correctAnswerString);
+  	console.log("questionNr: "+questionNr);
+  	console.log("tafel: "+listOfQuestions[questionNr][0]+"x"+listOfQuestions[questionNr][1]+"="+listOfQuestions[questionNr][2]);
   	if (newAnswerAsInt == correctAnswerAsInt) {
   		console.log("case 2 - fully correct");
   		quickUpdateToStats(true);
