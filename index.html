@@ -108,7 +108,7 @@ TO_DO
 }
 
 #missionProgressBar {
-        width: 400px;
+        width: 100%;
         height: 22px;
         border: 1px solid #111;
         background-color: #292929;
@@ -128,7 +128,8 @@ div.fullWidthAndBorder {
     border: 1px solid black;
     display: inline-block;
 }
-div.testStartButtonDigitlike, div.testPerformButtonDigitlike {
+
+div.testPerformButtonDigitlike {
     display: inline-block;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -149,16 +150,7 @@ div.testStartButtonDigitlike, div.testPerformButtonDigitlike {
     font-size: 30px;
 }
 
-div.testStartButtonDigitlikeSelected {
-    background: #FFFFCC; /* light yellow */
 
-}
-
-
-div#testStartButtonStart {
-    width: calc(100% - 10px);
-    background: #AAFF88; /* #66CC66 darker green */
-}
 
 /* the display */
 #testPerformQuestionAnswer {
@@ -180,7 +172,37 @@ div#testStartButtonStart {
 	display: none;
 }
 
-	    
+.testStartButtonDigit{
+	background-color: lightgray;
+	border: 1px solid white;
+	height: 50px;
+	line-height: 50px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer; cursor: hand; /* different browsers use different names */
+}
+
+.testStartButtonDigitlikeSelected {
+	background-color: lightyellow;
+	border: 1px solid black;
+}
+
+#testStartButtonRandom.testStartButtonDigitlikeSelected {
+	background-color: #FFCC66;
+	border: 1px solid black;
+}
+
+#testStartButtonStart {
+  background: #AAFF88; /* #66CC66 darker green */
+	border: 1px solid white;
+	height: 50px;
+	line-height: 50px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer; cursor: hand; /* different browsers use different names */
+}
+
+
 </style>
 
 
@@ -194,8 +216,10 @@ var selectedTablesForTest = [] ;
 var sequenceTables = [2, 10, 5, 4, 3, 8, 9, 7];
 var lengthLocalStorageTableData = 16;
 
+// from local storage
 var tableData;
 var tableIndex;
+var missionNr;
 
 var listOfQuestions;
 var questionNr;
@@ -204,11 +228,81 @@ var intermediateAnswer ;
 var timeStartTest ;     // milliseconds
 var timeStartQuestion ; // milliseconds
 
+// how many questions do we have when we are testing 3 tables (all multiplications)? -> nrQuestionsPerNTafel[3-1]
+var nrQuestionsPerNTafel = [11, 21, 30, 38, 45, 51, 56, 60, 63, 65, 66] ;
+
+
+// Lijst missies:
+// 1. lijst van tafels. Leeg indien random.
+// 2. tijd
+
+var missions = [
+	// +tafel 1
+	[ [1], [3] ],
+	[ [1], [2] ],
+	// +tafel 2
+	[ [2], [3] ],
+	[ [1,2], [2,3] ],
+	[ [1,2], [2,2] ],
+	// +tafel 10
+	[ [10], [3] ],
+	[ [2, 10], [2, 3] ],
+	[ [1, 2, 10], [2, 2, 2] ],
+	// +tafel 0
+	[ [0, 2, 10], [1, 2, 2] ],
+	// +tafel 5
+	[ [5], [3] ],
+	[ [5, 10], [2, 2] ],
+	[ [2, 5], [2, 2] ],
+	[ [1, 5], [1, 2] ],
+	[ [2, 5, 10], [1, 2, 1] ],
+	[ [2], [1] ],
+	// +tafel 4
+	[ [4], [3] ],
+	[ [4, 5, 10], [2, 2, 2] ],
+	[ [4, 2, 5], [2, 1, 2] ],
+	[ [4], [2] ],
+	[ [4, 0], [1, 1] ],
+	[ [0, 2], [0, 0] ],
+	// +tafel 3
+	[ [3], [3] ],
+	[ [2, 3], [2, 2] ],
+	[ [3, 4], [2, 1] ],
+	[ [2, 3, 5, 10], [1, 2, 1, 1] ],
+	[ [3], [1] ],
+	[ [2], [0] ],
+	// +tafel 8
+	[ [8], [3] ],
+	[ [8], [2] ],
+	[ [3, 8], [1, 2] ],
+	[ [3, 4, 8], [1, 1, 2] ],
+	[ [5], [0] ],
+	[ [8], [1] ],
+	[ [0, 2, 3, 4, 5, 10], [0, 1, 1, 1, 1, 1] ],
+	// +tafel 9
+	[ [9], [3] ],
+	[ [3, 9], [2, 2] ],
+	[ [9], [2] ],
+	[ [8, 9], [2, 2] ],
+	[ [3, 5, 9], [2, 1, 2] ],
+	[ [9], [1] ],
+	[ [10], [0] ],
+	// +tafel 7
+	];
+
+// [2, 10, 5, 4, 3, 8, 9, 7];
+
+
+// 0 - 2.0 is supersnel
+// 1 - 2.5 is erg snel
+// 2 - 5.0 is te doen
+// 3 - 10. is traag
 
 // Save the data table to local storage
 function saveToLocalStorage() {
 	localStorage.setItem("localStorageTableData",   JSON.stringify(tableData));
 	localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex)); // not needed, because doesn't change
+	localStorage.setItem("localStorageMissionNumber", missionNr);
 }
 
 // Retrieve the data from local storage
@@ -221,6 +315,7 @@ function getFromLocalStorage() {
 	if (storedIndex) {
 		tableIndex = JSON.parse(storedIndex);
 	}
+	missionNr = localStorage.getItem("localStorageMissionNumber");
 }
 
 
@@ -319,6 +414,8 @@ $(document).on("pageshow","#PAGE_HOME",function(){ // When entering pagetwo
         <p>Oefen een bepaalde tafel of selecteer een heleboel tafels, waarvan je dan 30 vragen krijgt.</p>
         </a>
       </li>
+    </ul>
+    <ul data-role="listview" data-inset="true">
       <li id="homeMission">
         <a href="#PAGE_MISSION" data-transition="flow">
         <img src="img_mission.png">
@@ -326,6 +423,8 @@ $(document).on("pageshow","#PAGE_HOME",function(){ // When entering pagetwo
         <p>Uitdaging: voltooi de volgende missie.</p>
         </a>
       </li>
+    </ul>
+    <ul data-role="listview" data-inset="true">
       <li id="homeStats">
         <a href="#PAGE_STATS" data-transition="turn">
         <img src="img_stats.png">
@@ -484,6 +583,24 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
    	
    	<h1>Welke tafels wil je oefenen?</h1>
    	
+   	<div class="ui-grid-b" >
+        <div class="ui-block-a testStartButtonDigit" id="testStartButton1" >1</div>
+        <div class="ui-block-b testStartButtonDigit" id="testStartButton2" >2</div>
+        <div class="ui-block-c testStartButtonDigit" id="testStartButton3" >3</div>
+        <div class="ui-block-a testStartButtonDigit" id="testStartButton4" >4</div>
+        <div class="ui-block-b testStartButtonDigit" id="testStartButton5" >5</div>
+        <div class="ui-block-c testStartButtonDigit" id="testStartButton6" >6</div>
+        <div class="ui-block-a testStartButtonDigit" id="testStartButton7" >7</div>
+        <div class="ui-block-b testStartButtonDigit" id="testStartButton8" >8</div>
+        <div class="ui-block-c testStartButtonDigit" id="testStartButton9" >9</div>
+        <div class="ui-block-a testStartButtonDigit" id="testStartButton10">10</div>
+        <div class="ui-block-b testStartButtonDigit" id="testStartButton0" >0</div>
+        <div class="ui-block-c testStartButtonDigit" id="testStartButtonRandom">Random</div>
+    </div>
+   	<div class="ui-grid-solo" >
+    	<div class="testStartButtonDigitlike" id="testStartButtonStart">START</div>
+  	</div>
+    <!--
 		<div class="fullWidthAndBorder">
 		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton1">1</div>
 		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton2">2</div>
@@ -500,6 +617,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
 		    
 		    <div class="testStartButtonDigitlike" id="testStartButtonStart">START</div>
 		</div>
+		-->
 	  
     
 	  <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
@@ -825,8 +943,19 @@ function progress(percent, $element) {
     var progressBarWidth = percent * $element.width() / 100;
     $element.find('div').animate({ width: progressBarWidth }, 500).html(percent + "%&nbsp;");
 }
+function resetProgress($element) {
+    $element.find('div').css('width', '0px').html('');
+}
 $(document).on("pageshow","#PAGE_MISSION",function(){ // When entering pagetwo
-	progress(80, $('#missionProgressBar'));
+	// make sure we have most updated information from local storage
+	getFromLocalStorage();
+	
+	// reset bar before animating it
+	resetProgress($('#missionProgressBar'));
+	
+	var myPerc = 100. * missionNr / missions.length;
+	myPerc = parseInt(myPerc);
+	progress(myPerc, $('#missionProgressBar'));
 });
 </script>
 
