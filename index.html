@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="lib/jquery.mobile.custom.structure.min.css">
 <link rel="stylesheet" href="lib/jquery.mobile.custom.theme.min.css">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
 <script src="lib/jquery-1.11.1.min.js"></script>
 <script src="lib/jquery.mobile.custom.min.js"></script>
+<script src="lib/jquery.easing.1.3.min.js"></script>
 
 <!-- 
 
+<meta name="viewport" content="width=device-width, initial-scale=1">
 OVERVIEW PAGES:
 
 PAGE_HOME
@@ -36,7 +37,8 @@ OVERVIEW EXTERNAL LIBRARIES
 
 - Progress bar old     https://github.com/tolis-e/jQuery-Mobile-Progress-Bar-with-Percentage   -- not anymore used, but replaced by
 - Progress bar         http://workshop.rs/2012/12/animated-progress-bar-in-4-lines-of-jquery/
-  
+- EaseOutBounds        http://easings.net
+- Shake                http://stackoverflow.com/questions/4399005/implementing-jquerys-shake-effect-with-animate
 
 
 OVERVIEW LOCAL STORAGE
@@ -99,13 +101,20 @@ TO_DO
 <!-- ###############################################################  -->
 
 <style>
+
+.homeItem {
+ margin: 0 !important;
+}
+
+#homeQuiz, #homeMission, #homeStats {
+ display: none;
+	opacity : 1; /* old, was used to animate opacity*/
+}
+
 .ui-block-a .ui-btn, .ui-block-b .ui-btn, .ui-block-c .ui-btn {
     margin: 0 !important;
 }
 
-#homeQuiz, #homeMission, #homeStats {
-	opacity : 0;
-}
 
 #missionProgressBar {
         width: 100%;
@@ -129,7 +138,7 @@ div.fullWidthAndBorder {
     display: inline-block;
 }
 
-div.testPerformButtonDigitlike {
+div.testPerformButtonDigitlikeOld {
     display: inline-block;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -150,7 +159,15 @@ div.testPerformButtonDigitlike {
     font-size: 30px;
 }
 
-
+div.testPerformButtonDigitlike{
+	background-color: lightgray;
+	border: 1px solid white;
+	height: 50px;
+	line-height: 50px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer; cursor: hand; /* different browsers use different names */
+}
 
 /* the display */
 #testPerformQuestionAnswer {
@@ -227,6 +244,8 @@ var intermediateAnswer ;
 
 var timeStartTest ;     // milliseconds
 var timeStartQuestion ; // milliseconds
+
+var inputIsBlocked ;
 
 // how many questions do we have when we are testing 3 tables (all multiplications)? -> nrQuestionsPerNTafel[3-1]
 var nrQuestionsPerNTafel = [11, 21, 30, 38, 45, 51, 56, 60, 63, 65, 66] ;
@@ -370,6 +389,10 @@ function initializeLocalStorage() {
 	}
 	localStorage.setItem("localStorageTableData",   JSON.stringify(tableData));
 	localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex));
+	// mission nr
+	missionNr = 0 ;
+	localStorage.setItem("localStorageMissionNumber", missionNr);
+	
 }
 
 // When home page is loaded, initialize local storage is not yet done.
@@ -386,12 +409,20 @@ $(document).on("pagecreate","#PAGE_HOME",function(){
 
 
 
-$(document).on("pageshow","#PAGE_HOME",function(){ // When entering pagetwo
-  $("#homeQuiz").animate({opacity:'1'},250, function(){
-  $("#homeMission").animate({opacity:'1'},250, function(){
-  $("#homeStats").animate({opacity:'1'},250);
-});
-});
+//$(document).on("pageshow","#PAGE_HOME",function(){ // When entering pagetwo
+//  $("#homeQuiz").animate({opacity:'1'},250, function(){
+//  $("#homeMission").animate({opacity:'1'},250, function(){
+//  $("#homeStats").animate({opacity:'1'},250);
+//});
+//});   
+ 
+$(document).on("pageshow","#PAGE_HOME",function(){
+	$("#homeQuiz").slideDown("slow","easeOutBounce",function() {
+	$("#homeMission").slideDown("slow","easeOutBounce",function() {
+	$("#homeStats").slideDown("slow","easeOutBounce");
+	});
+	});
+
 });
   	
 
@@ -406,30 +437,30 @@ $(document).on("pageshow","#PAGE_HOME",function(){ // When entering pagetwo
    <div data-role="main" class="ui-content">
    	
     <h2>Wat wil je doen?</h2>
-    <ul data-role="listview" data-inset="true">
+    <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
       <li id="homeQuiz">
         <a href="#PAGE_TEST_START" data-transition="slide">
         <img src="img_test.png">
         <h2>Quiz</h2>
-        <p>Oefen een bepaalde tafel of selecteer een heleboel tafels, waarvan je dan 30 vragen krijgt.</p>
+        <p>Oefen een bepaalde tafel.</p>
         </a>
       </li>
     </ul>
-    <ul data-role="listview" data-inset="true">
+    <ul data-role="listview" data-inset="true" id="ulHomeMission" class="homeItem">
       <li id="homeMission">
         <a href="#PAGE_MISSION" data-transition="flow">
         <img src="img_mission.png">
         <h2>Missie</h2>
-        <p>Uitdaging: voltooi de volgende missie.</p>
+        <p>Voltooi de volgende missie.</p>
         </a>
       </li>
     </ul>
-    <ul data-role="listview" data-inset="true">
+    <ul data-role="listview" data-inset="true" id="ulHomeStats" class="homeItem">
       <li id="homeStats">
         <a href="#PAGE_STATS" data-transition="turn">
         <img src="img_stats.png">
         <h2>Statistieken</h2>
-        <p>Ga na welke tafels je het beste kan.</p>
+        <p>Welke tafel kan je het beste?</p>
         </a>
       </li>
     </ul>
@@ -512,7 +543,9 @@ function selectQuestions() {
 
 
 $(document).on("pagecreate","#PAGE_TEST_START",function(){
- 
+ 	
+ 	inputIsBlocked = false;
+ 	
   // when you select a digit, then highlight it and unhighlight the random button
   $("div.testStartButtonDigit").on("tap",function(){
     $(this).toggleClass("testStartButtonDigitlikeSelected");
@@ -600,24 +633,6 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
    	<div class="ui-grid-solo" >
     	<div class="testStartButtonDigitlike" id="testStartButtonStart">START</div>
   	</div>
-    <!--
-		<div class="fullWidthAndBorder">
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton1">1</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton2">2</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton3">3</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton4">4</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton5">5</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton6">6</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton7">7</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton8">8</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton9">9</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton10">10</div>
-		    <div class="testStartButtonDigitlike testStartButtonDigit" id="testStartButton0">0</div>
-		    <div class="testStartButtonDigitlike" id="testStartButtonRandom">Random</div>
-		    
-		    <div class="testStartButtonDigitlike" id="testStartButtonStart">START</div>
-		</div>
-		-->
 	  
     
 	  <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
@@ -711,10 +726,34 @@ function testIsFinished() {
 	
 }
 
+
+// source: http://stackoverflow.com/questions/4399005/implementing-jquerys-shake-effect-with-animate
+jQuery.fn.shake = function(intShakes, intDistance, intDuration) {
+    this.each(function() {
+        $(this).css("position","relative"); 
+        for (var x=1; x<=intShakes; x++) {
+        	if (Math.random()>0.5) {
+				        $(this).animate({left:(intDistance*-1)}, (((intDuration/intShakes)/4)))
+				    .animate({left:intDistance}, ((intDuration/intShakes)/2))
+				    .animate({left:0}, (((intDuration/intShakes)/4)));
+				    }
+			    else {
+				        $(this).animate({top:(intDistance*-1)}, (((intDuration/intShakes)/4)))
+				    .animate({top:intDistance}, ((intDuration/intShakes)/2))
+				    .animate({top:0}, (((intDuration/intShakes)/4)));
+			    }
+    }
+  });
+	return this;
+};
+
+
+
 $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
  
   
   $("div.testPerformButtonDigitlike").on("tap",function(){
+  if (!inputIsBlocked){
   	// LOGIC
   	//
   	// Either
@@ -764,20 +803,37 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   	else {
   		console.log("case 3 - not correct");
   		quickUpdateToStats(false);
-  		questionNr++;
-  		intermediateAnswer = 0;
-  		if (questionNr<listOfQuestions.length) { // test not finished
-	  		displayNewQuestion();
-	  		displayPartialAnswer();
-	  		timeStartQuestion = new Date().getTime();
-	  		// GUI
-	  		$("#testPerformWrong").show();
-		    setTimeout(function(){
-		    	$("#testPerformWrong").hide();
-		    }, 300);
-	  	} else { // test is finished
-	  		testIsFinished();
-	  	}
+			// block input
+			inputIsBlocked = true;
+			
+			// remove the question and partial answer
+			$("#testPerformQuestion").text("");
+			$("#testPerformEqual").text("");
+			$("#testPerformAnswer").text("");
+			// show solution
+			$("#testPerformWrong").text("FOUT, "+listOfQuestions[questionNr][0]+"x"+listOfQuestions[questionNr][1]+"="+listOfQuestions[questionNr][2]);
+			$("#testPerformWrong").show();
+			
+			// shake, and only continue after the shake
+			var shakingTime = 4000; // ms
+			$("#testPerformButtonPaneButtom").shake(40,50,shakingTime);
+			// only continue after shaking is finished
+			setTimeout(function(){
+				// remove the solution
+				$("#testPerformWrong").hide();
+				
+				// unblock input
+				inputIsBlocked = false;
+	  		questionNr++;
+	  		intermediateAnswer = 0;
+	  		if (questionNr<listOfQuestions.length) { // test not finished
+		  		displayNewQuestion();
+		  		displayPartialAnswer();
+		  		timeStartQuestion = new Date().getTime();
+		  	} else { // test is finished
+		  		testIsFinished();
+		  	}
+    	}, shakingTime+300);
   	}
   	
   	
@@ -788,6 +844,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
     setTimeout(function(){
     	$("div.testPerformButtonDigitlike").css('background-color', '#cccccc');
     }, 100);
+  } // end if input is not blocked
   });
 
   
@@ -806,7 +863,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
    <div data-role="main" class="ui-content">
    	
 
-		<div class="fullWidthAndBorder" id="testPerformDisplayContainer">
+   	<div class="ui-grid-solo" id="testPerformDisplayContainer">
 		    <div id="testPerformQuestionAnswer">
 		    	<span id="testPerformQuestion"></span>
 		    	<span id="testPerformEqual"   ></span>
@@ -814,24 +871,24 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 		    	<span id="testPerformCorrect" >JUIST</span>
 		    	<span id="testPerformWrong"   >FOUT</span>
 		    </div>
-		</div>
-		
-		<div class="fullWidthAndBorder">
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton1"  digitValue="1" >1</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton2"  digitValue="2" >2</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton3"  digitValue="3" >3</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton4"  digitValue="4" >4</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton5"  digitValue="5" >5</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton6"  digitValue="6" >6</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton7"  digitValue="7" >7</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton8"  digitValue="8" >8</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton9"  digitValue="9" >9</div>
-		    <div class="testPerformButtonDigitlike"                        id="testPerformButton10" digitValue="10">&larr;</div>
-		    <div class="testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton0"  digitValue="0" >0</div>
-		    <div class="testPerformButtonDigitlike"                        id="testPerformButtonRandom">OK</div>
-		</div>
-
-    
+  	</div>
+  	
+   	<div class="ui-grid-b" id="testPerformButtonPaneButtom">
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton1" digitValue="1" >1</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton2" digitValue="2" >2</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton3" digitValue="3" >3</div>
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton4" digitValue="4" >4</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton5" digitValue="5" >5</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton6" digitValue="6" >6</div>
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton7" digitValue="7" >7</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton8" digitValue="8" >8</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton9" digitValue="9" >9</div>
+        <div class="ui-block-a testPerformButtonDigitlike                       " id="testPerformButtonBack" digitValue="-1" >&larr;</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton0"  digitValue="0" >0</div>
+        <div class="ui-block-c testPerformButtonDigitlike                       " id="testPerformButtonOK" digitValue="10" >OK</div>
+    </div>
+  	
+  	
   </div> <!-- data-role="main" -->
   
 </div> <!-- data-role="page" id="PAGE_TEST_PERFORM" -->
@@ -946,12 +1003,15 @@ function progress(percent, $element) {
 function resetProgress($element) {
     $element.find('div').css('width', '0px').html('');
 }
-$(document).on("pageshow","#PAGE_MISSION",function(){ // When entering pagetwo
-	// make sure we have most updated information from local storage
-	getFromLocalStorage();
-	
+
+$(document).on("pagebeforehide","#PAGE_MISSION",function(){ 
 	// reset bar before animating it
 	resetProgress($('#missionProgressBar'));
+});
+
+$(document).on("pageshow","#PAGE_MISSION",function(){ 
+	// make sure we have most updated information from local storage
+	getFromLocalStorage();
 	
 	var myPerc = 100. * missionNr / missions.length;
 	myPerc = parseInt(myPerc);
