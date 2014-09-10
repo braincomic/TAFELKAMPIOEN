@@ -230,7 +230,7 @@ div.testPerformButtonDigitlike{
 <script>
 // global variables
 var selectedTablesForTest = [] ;
-var sequenceTables = [2, 10, 5, 4, 3, 8, 9, 7];
+var sequenceTables = [2, 10, 5, 4, 3, 6, 8, 9, 7];
 var lengthLocalStorageTableData = 16;
 
 // from local storage
@@ -266,12 +266,14 @@ var missions = [
 	// +tafel 10
 	[ [10], [3] ],
 	[ [2, 10], [2, 3] ],
-	[ [1, 2, 10], [2, 2, 2] ],
+	[ [1], [0] ],
+	[ [1, 2, 10], [2, 2, 1] ],
 	// +tafel 0
 	[ [0, 2, 10], [1, 2, 2] ],
 	// +tafel 5
 	[ [5], [3] ],
 	[ [5, 10], [2, 2] ],
+	[ [5], [2] ],
 	[ [2, 5], [2, 2] ],
 	[ [1, 5], [1, 2] ],
 	[ [2, 5, 10], [1, 2, 1] ],
@@ -287,27 +289,62 @@ var missions = [
 	[ [3], [3] ],
 	[ [2, 3], [2, 2] ],
 	[ [3, 4], [2, 1] ],
+	[ [5], [1] ],
 	[ [2, 3, 5, 10], [1, 2, 1, 1] ],
 	[ [3], [1] ],
 	[ [2], [0] ],
+	// +tafel 6
+	[ [6], [3] ],
+	[ [4], [1] ],
+	[ [6], [2] ],
+	[ [3, 6], [1, 2] ],
+	[ [3, 4, 6], [1, 1, 2] ],
+	[ [5], [0] ],
+	[ [6], [1] ],
+	[ [6], [0] ],
 	// +tafel 8
 	[ [8], [3] ],
 	[ [8], [2] ],
 	[ [3, 8], [1, 2] ],
-	[ [3, 4, 8], [1, 1, 2] ],
-	[ [5], [0] ],
+	[ [4], [0] ],
+	[ [4, 6, 8], [1, 1, 2] ],
+	[ [3], [0] ],
 	[ [8], [1] ],
 	[ [0, 2, 3, 4, 5, 10], [0, 1, 1, 1, 1, 1] ],
 	// +tafel 9
 	[ [9], [3] ],
 	[ [3, 9], [2, 2] ],
+	[ [9, 10], [2, 1] ],
 	[ [9], [2] ],
 	[ [8, 9], [2, 2] ],
-	[ [3, 5, 9], [2, 1, 2] ],
+	[ [3, 6, 9], [2, 1, 2] ],
 	[ [9], [1] ],
+	[ [2, 4, 6, 8, 10], [1, 1, 1, 2, 1] ],
+	[ [3, 4, 6, 8, 9], [1, 1, 1, 2, 1] ],
 	[ [10], [0] ],
 	// +tafel 7
+	[ [7], [3] ],
+	[ [2, 3, 7], [1, 1, 2] ],
+	[ [6, 8, 9], [2, 1, 1] ],
+	[ [6, 7, 8, 9], [1, 1, 1, 1] ],
+	[ [7], [2] ],
+	[ [7], [1] ],
+	[ [7], [0] ],
+	[ [9], [0] ],
+	[ [8], [0] ],
+	[ [3, 7], [0, 0] ],
+	[ [7, 8], [0, 0] ],
+	[ [7, 8, 9], [0, 0, 0] ],
+	[ [0, 2, 4, 6, 8, 10], [1, 1, 1, 1, 1, 1] ],
+	[ [1, 3, 5, 7, 9], [1, 1, 1, 1, 1] ],
+	[ [2, 3, 5, 6, 8], [0, 0, 0, 1, 1] ],
+	[ [4, 7, 8, 9], [0, 0, 0, 1] ],
+	[ [3, 8, 9, 7], [0, 0, 0, 0] ],
+	[ [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0] ],
+	[ [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ],
 	];
+
+
 
 // [2, 10, 5, 4, 3, 8, 9, 7];
 
@@ -584,6 +621,25 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
     	alert("Fout: selecteer eerst de tafels");
     }
     else {
+    	// generate random digit if needed
+    	if (selectedRandomForTest) {
+    		var number1 = Math.floor(Math.random() * 10.9999);
+    		var number2 = Math.floor(Math.random() * 10.9999);
+    		var number3 = Math.floor(Math.random() * 10.9999);
+    		if (number1 == number2) number2 = number2+1 % 11 ;
+    		if (number1 == number3) number3 = number3+1 % 11 ;
+    		if (number2 == number3) number3 = number3+1 % 11 ;
+    		if (number1 == number2) number2 = number2+1 % 11 ;
+    		if (number1 == number3) number3 = number3+1 % 11 ;
+    		if (number2 == number3) number3 = number3+1 % 11 ;
+    		if (number1 == number2) number2 = number2+1 % 11 ;
+    		if (number1 == number3) number3 = number3+1 % 11 ;
+    		if (number2 == number3) number3 = number3+1 % 11 ;
+    		selectedTablesForTest.push(number1);
+    		selectedTablesForTest.push(number2);
+    		selectedTablesForTest.push(number3);
+    		console.log("Random tafels: "+number1+", "+number2+", "+number3);
+    	}
     	// Select the questions!
     	selectQuestions();
     	questionNr = 0;
@@ -752,7 +808,7 @@ jQuery.fn.shake = function(intShakes, intDistance, intDuration) {
 $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
  
   
-  $("div.testPerformButtonDigitlike").on("tap",function(){
+  $(".testPerformButtonDigit").on("tap",function(){
   if (!inputIsBlocked){
   	// LOGIC
   	//
@@ -848,6 +904,11 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   });
 
   
+  $("#testPerformButtonBack").on("tap",function(){
+  	intermediateAnswer = 0;
+  	displayPartialAnswer();
+	});
+	
 });
   	
 
@@ -885,7 +946,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
         <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton9" digitValue="9" >9</div>
         <div class="ui-block-a testPerformButtonDigitlike                       " id="testPerformButtonBack" digitValue="-1" >&larr;</div>
         <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton0"  digitValue="0" >0</div>
-        <div class="ui-block-c testPerformButtonDigitlike                       " id="testPerformButtonOK" digitValue="10" >OK</div>
+     <!--   <div class="ui-block-c testPerformButtonDigitlike                       " id="testPerformButtonOK" digitValue="10" >OK</div> -->
     </div>
   	
   	
