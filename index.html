@@ -220,6 +220,15 @@ div.testPerformButtonDigitlike{
 }
 
 
+#resultScoreLineMissieGeslaagd {
+    color: green;
+    display: none;
+}
+#resultScoreLineMissieGefaald {
+    color: red;
+    display: none;
+}
+
 </style>
 
 
@@ -242,8 +251,12 @@ var listOfQuestions;
 var questionNr;
 var intermediateAnswer ;
 
+var insideMission ;
+var missionTimeAllowed ;
+
 var timeStartTest ;     // milliseconds
 var timeStartQuestion ; // milliseconds
+var totalTimeThisTest;  // milliseconds
 
 var inputIsBlocked ;
 
@@ -269,7 +282,7 @@ var missions = [
 	[ [1], [0] ],
 	[ [1, 2, 10], [2, 2, 1] ],
 	// +tafel 0
-	[ [0, 2, 10], [1, 2, 2] ],
+	[ [0, 2, 10], [1, 2, 1] ],
 	// +tafel 5
 	[ [5], [3] ],
 	[ [5, 10], [2, 2] ],
@@ -345,10 +358,7 @@ var missions = [
 	];
 
 
-
-// [2, 10, 5, 4, 3, 8, 9, 7];
-
-
+speedPerQuestion = [2, 2.5, 5, 10];
 // 0 - 2.0 is supersnel
 // 1 - 2.5 is erg snel
 // 2 - 5.0 is te doen
@@ -641,6 +651,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
     		console.log("Random tafels: "+number1+", "+number2+", "+number3);
     	}
     	// Select the questions!
+    	insideMission = false;
     	selectQuestions();
     	questionNr = 0;
     	intermediateAnswer = 0;
@@ -963,15 +974,31 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
 
 	// fill the title
-	var totalTime = new Date().getTime() - timeStartTest;
-	totalTime /= 1000. ; // from ms to s
+	totalTimeThisTest = new Date().getTime() - timeStartTest;
+	totalTimeThisTest /= 1000. ; // from ms to s
 	var myScore = 0;
 	for (i = 0; i<listOfQuestions.length; i++) {
 		if (listOfQuestions[i][12] > 0) {
 			myScore++;
 		}
 	}
-	$("#resultScoreLine").text("Score: "+myScore+"/"+(listOfQuestions.length)+" in "+totalTime.toFixed(2)+" s");
+	$("#resultScoreLine").text("Score: "+myScore+"/"+(listOfQuestions.length)+" in "+totalTimeThisTest.toFixed(2)+" s");
+	
+	// if mission, check if mission ack
+	if (insideMission) {
+		if(totalTimeThisTest<missionTimeAllowed && myScore==listOfQuestions.length) {
+			// mission success
+			missionNr ++;
+			saveToLocalStorage();
+			$("#resultScoreLineMissieGeslaagd").show();
+			$("#resultScoreLineMissieGefaald") .hide();
+		}
+		else {
+			// mission failed
+			$("#resultScoreLineMissieGeslaagd").hide();
+			$("#resultScoreLineMissieGefaald") .show();
+		}
+	}
 	
 	// create copy and sort it
 	var listOfQuestionsCopy = listOfQuestions.clone();
@@ -1030,6 +1057,8 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
    <div data-role="main" class="ui-content">
    	
     <h2 id="resultScoreLine"></h2>
+    <h3 id="resultScoreLineMissieGeslaagd" >Missie geslaagd</h3>
+    <h3 id="resultScoreLineMissieGefaald" >Missie gefaald</h3>
     
     <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
     
@@ -1077,7 +1106,79 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
 	var myPerc = 100. * missionNr / missions.length;
 	myPerc = parseInt(myPerc);
 	progress(myPerc, $('#missionProgressBar'));
+	
+	// DISPLAY MISSION TEXT
+	// "tafel van 7"
+	// "tafels van 8 en 9"
+	// "tafels van 3, 5 en 9"
+	var textTables = "" ; 
+	if (missions[missionNr][0].length == 1) {
+		textTables = "tafel van "+missions[missionNr][0][0];
+	}
+	else {
+		textTables = "tafels van "+missions[missionNr][0][0];
+		for (i = 1; i<missions[missionNr][0].length-1; i++) {
+			textTables += ", ";
+			textTables += missions[missionNr][0][i];
+		}
+		textTables += " en ";
+		textTables += missions[missionNr][0][missions[missionNr][0].length-1];
+	}
+	console.log("missionTableText="+missionTableText);
+	$("#missionTableText").text(textTables);
+	
+	// CALCULATE AND DISPLAY TIME
+	// aantal vragen
+	var nTables = missions[missionNr][0].length;
+	var nQuestions = nrQuestionsPerNTafel[nTables-1];
+	console.log("there will be "+nQuestions+" question");
+	// calculate average of the times per question
+	var sumTimePerQuestion = 0;
+	for (i = 1; i<missions[missionNr][1].length; i++) {
+		sumTimePerQuestion += speedPerQuestion[missions[missionNr][1][i]];
+	};
+	var avgTimePerQuestion = sumTimePerQuestion/(0.+missions[missionNr][1].length);
+	missionTimeAllowed = Math.ceil(avgTimePerQuestion*nQuestions);
+	console.log("nTables="+nTables);
+	console.log("nQuestions="+nQuestions);
+	console.log("sumTimePerQuestion="+sumTimePerQuestion);
+	console.log("avgTimePerQuestion="+avgTimePerQuestion);
+	console.log("missionTimeAllowed="+missionTimeAllowed);
+	$("#missionTimeText").text(missionTimeAllowed);
+	//$('#nextMissionPicture').animate({ width: progressBarWidth }, 500).html(percent + "%&nbsp;");
+	        $("#nextMissionPicture").animate({width: "400px", height: "400px" });
 });
+
+
+
+
+
+
+$(document).on("pagecreate","#PAGE_MISSION",function(){
+  $("#nextMission").on("tap",function(){
+    selectedTablesForTest = [];
+    selectedRandomForTest = false;
+  	for (i = 1; i<missions[missionNr][0].length; i++) {
+  		selectedTablesForTest.push(missions[missionNr][0][i]);
+  	}
+  	
+  	// set start mission
+   	// Select the questions!
+   	insideMission = true;
+   	selectQuestions();
+   	questionNr = 0;
+   	intermediateAnswer = 0;
+   	displayNewQuestion();
+   	displayPartialAnswer();
+   	// for the first question we give the user extra time
+  	timeStartTest     = new Date().getTime() + 1000;
+  	timeStartQuestion = new Date().getTime() + 1000;
+   	
+	   // go to the following page
+	   $.mobile.changePage('#PAGE_TEST_PERFORM');
+  });
+ });
+  
 </script>
 
 
@@ -1094,12 +1195,13 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
     
     <h1>Volgende missie:</h1>
     
-    <ul data-role="listview" data-inset="true">
+    <ul data-role="listview" data-inset="true" id="nextMission">
       <li>
-        <a href="#PAGE_MISSION">
-        <img src="img_mission.png">
-        <p>Los de tafel van 7 op in 50 seconden!</p>
-        <p>Klik hier om te starten.</p>
+        <a href="#">
+        <img src="img_mission.png" id="nextMissionPicture" >
+        <p>Los de <span id="missionTableText"></span> op</span></p>
+        <p>zonder fouten</p>
+        <p>in <span id="missionTimeText"></span> seconden!</p>
         </a>
       </li>
     </ul>
