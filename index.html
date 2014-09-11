@@ -476,11 +476,16 @@ $(document).on("pagecreate","#PAGE_HOME",function(){
 //});   
  
 $(document).on("pageshow","#PAGE_HOME",function(){
+	
+		    setTimeout(function(){
 	$("#homeQuiz").slideDown("slow","easeOutBounce",function() {
 	$("#homeMission").slideDown("slow","easeOutBounce",function() {
 	$("#homeStats").slideDown("slow","easeOutBounce");
 	});
 	});
+		    }, 2000);
+		    
+	
 
 });
   	
@@ -495,7 +500,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
 
    <div data-role="main" class="ui-content">
    	
-    <h2>Wat wil je doen?</h2>
+    <h2>Word tafelkampioen!</h2>
     <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
       <li id="homeQuiz">
         <a href="#PAGE_TEST_START" data-transition="slide">
