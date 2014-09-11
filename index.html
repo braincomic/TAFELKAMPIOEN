@@ -1136,14 +1136,19 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
 	// aantal vragen
 	var nTables = missions[missionNr][0].length;
 	var nQuestions = nrQuestionsPerNTafel[nTables-1];
+	$("#missionDebugPane").append("nTables="+nTables+"<br>");
+	$("#missionDebugPane").append("nQuestions="+nQuestions+"<br>");
 	console.log("there will be "+nQuestions+" question");
 	// calculate average of the times per question
 	var sumTimePerQuestion = 0;
-	for (i = 1; i<missions[missionNr][1].length; i++) {
+	for (i = 0; i<missions[missionNr][1].length; i++) {
 		sumTimePerQuestion += speedPerQuestion[missions[missionNr][1][i]];
 	};
+	$("#missionDebugPane").append("sumTimePerQuestion="+sumTimePerQuestion+"<br>");
 	var avgTimePerQuestion = sumTimePerQuestion/(0.+missions[missionNr][1].length);
+	$("#missionDebugPane").append("avgTimePerQuestion="+avgTimePerQuestion+"<br>");
 	missionTimeAllowed = Math.ceil(avgTimePerQuestion*nQuestions);
+	$("#missionDebugPane").append("missionTimeAllowed="+missionTimeAllowed+"<br>");
 	console.log("nTables="+nTables);
 	console.log("nQuestions="+nQuestions);
 	console.log("sumTimePerQuestion="+sumTimePerQuestion);
@@ -1163,7 +1168,7 @@ $(document).on("pagecreate","#PAGE_MISSION",function(){
   $("#nextMission").on("tap",function(){
     selectedTablesForTest = [];
     selectedRandomForTest = false;
-  	for (i = 1; i<missions[missionNr][0].length; i++) {
+  	for (i = 0; i<missions[missionNr][0].length; i++) {
   		selectedTablesForTest.push(missions[missionNr][0][i]);
   	}
   	
@@ -1210,6 +1215,8 @@ $(document).on("pagecreate","#PAGE_MISSION",function(){
         </a>
       </li>
     </ul>
+    
+    <div id="missionDebugPane"></div>
     
     <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
     
