@@ -238,6 +238,10 @@ tr{
 border-bottom: 1px solid #d6d6d6;
 }
 
+.redClass{
+	color: red;
+}
+
 </style>
 
 
@@ -394,6 +398,8 @@ function getFromLocalStorage() {
 }
 
 
+
+
 </script>
 
 
@@ -408,6 +414,8 @@ function getFromLocalStorage() {
 <!-- ###############################################################  -->
 
 <script>
+
+
 	
 // Initialize the local storage (table and index).
 // Warning: this will eraze any already existing data
@@ -462,6 +470,9 @@ $(document).on("pagecreate","#PAGE_HOME",function(){
 		initializeLocalStorage();
 	}
 	getFromLocalStorage();
+	
+	
+
 });
 
 
@@ -585,6 +596,14 @@ function displayPartialAnswer() {
 		$("#testPerformEqual").text(" = ");
 		$("#testPerformAnswer").text(intermediateAnswer);
 	}
+}
+
+// display (only display!) the partial answer 'intermediateAnswer' to the screen WHICH IS WRONG
+function displayPartialAnswerWrong() {
+	displayPartialAnswer();
+	$("#testPerformQuestion").addClass("redClass");
+	$("#testPerformEqual").addClass("redClass");
+	$("#testPerformAnswer").addClass("redClass");
 }
 
 // de gebruiker heeft tafels geselecteerd.
@@ -888,6 +907,13 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   	} 
   	else {
   		console.log("case 3 - not correct");
+  		intermediateAnswer = newAnswerAsInt;
+  		displayPartialAnswerWrong();
+  	
+  	
+  	
+  	/*
+  		console.log("case 3 - not correct");
   		quickUpdateToStats(false);
 			// block input
 			inputIsBlocked = true;
@@ -920,22 +946,28 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 		  		testIsFinished();
 		  	}
     	}, shakingTime+300);
+    */
+    	
+    	
   	}
   	
   	
   	// GUI STUFF to feel "presslike"
   	// when you select a digit, then highlight it and unhighlight the random button
     mydiv = $(this);
-    mydiv.css('background-color', '#ccccff');
+    mydiv.css('background-color', '#FFFFF2');
     setTimeout(function(){
     	$("div.testPerformButtonDigitlike").css('background-color', '#cccccc');
-    }, 100);
+    }, 200);
   } // end if input is not blocked
   });
 
   
   $("#testPerformButtonBack").on("tap",function(){
   	intermediateAnswer = 0;
+		$("#testPerformQuestion").removeClass("redClass");
+		$("#testPerformEqual").removeClass("redClass");
+		$("#testPerformAnswer").removeClass("redClass");
   	displayPartialAnswer();
 	});
 	
