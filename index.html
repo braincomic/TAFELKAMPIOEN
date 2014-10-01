@@ -632,20 +632,20 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
  	inputIsBlocked = false;
  	
   // when you select a digit, then highlight it and unhighlight the random button
-  $("div.testStartButtonDigit").on("tap",function(){
+  $("div.testStartButtonDigit").on("touchstart",function(){
     $(this).toggleClass("testStartButtonDigitlikeSelected");
     $("#testStartButtonRandom").removeClass("testStartButtonDigitlikeSelected");
   });
   
   // when you select the random button, then highlight it and unhighlight the digit buttons
-  $("#testStartButtonRandom").on("tap",function(){
+  $("#testStartButtonRandom").on("touchstart",function(){
     $("div.testStartButtonDigit").removeClass("testStartButtonDigitlikeSelected");
     $(this).toggleClass("testStartButtonDigitlikeSelected");
   });
   
   // when you tap START, then...
   
-  $("#testStartButtonStart").on("tap",function(){
+  $("#testStartButtonStart").on("touchstart",function(){
     // check what is selected
     // will be stored in global variable selectedTablesForTest
     selectedTablesForTest = [];
@@ -857,7 +857,7 @@ jQuery.fn.shake = function(intShakes, intDistance, intDuration) {
 $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
  
   
-  $(".testPerformButtonDigit").on("tap",function(){
+  $(".testPerformButtonDigit").on("touchstart",function(){
   if (!inputIsBlocked){
   	// LOGIC
   	//
@@ -963,7 +963,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   });
 
   
-  $("#testPerformButtonBack").on("tap",function(){
+  $("#testPerformButtonBack").on("touchstart",function(){
   	intermediateAnswer = 0;
 		$("#testPerformQuestion").removeClass("redClass");
 		$("#testPerformEqual").removeClass("redClass");
@@ -1211,7 +1211,7 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
 
 
 $(document).on("pagecreate","#PAGE_MISSION",function(){
-  $("#nextMission").on("tap",function(){
+  $("#nextMission").on("touchstart",function(){
     selectedTablesForTest = [];
     selectedRandomForTest = false;
   	for (i = 0; i<missions[missionNr][0].length; i++) {
