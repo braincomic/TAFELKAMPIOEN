@@ -632,20 +632,23 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
  	inputIsBlocked = false;
  	
   // when you select a digit, then highlight it and unhighlight the random button
-  $("div.testStartButtonDigit").on("touchstart",function(){
+  $("div.testStartButtonDigit").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
     $(this).toggleClass("testStartButtonDigitlikeSelected");
     $("#testStartButtonRandom").removeClass("testStartButtonDigitlikeSelected");
   });
   
   // when you select the random button, then highlight it and unhighlight the digit buttons
-  $("#testStartButtonRandom").on("touchstart",function(){
+  $("#testStartButtonRandom").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
     $("div.testStartButtonDigit").removeClass("testStartButtonDigitlikeSelected");
     $(this).toggleClass("testStartButtonDigitlikeSelected");
   });
   
   // when you tap START, then...
   
-  $("#testStartButtonStart").on("touchstart",function(){
+  $("#testStartButtonStart").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
     // check what is selected
     // will be stored in global variable selectedTablesForTest
     selectedTablesForTest = [];
@@ -857,7 +860,8 @@ jQuery.fn.shake = function(intShakes, intDistance, intDuration) {
 $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
  
   
-  $(".testPerformButtonDigit").on("touchstart",function(){
+  $(".testPerformButtonDigit").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   if (!inputIsBlocked){
   	// LOGIC
   	//
@@ -963,7 +967,8 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   });
 
   
-  $("#testPerformButtonBack").on("touchstart",function(){
+  $("#testPerformButtonBack").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	intermediateAnswer = 0;
 		$("#testPerformQuestion").removeClass("redClass");
 		$("#testPerformEqual").removeClass("redClass");
@@ -1210,8 +1215,9 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
 
 
 
-$(document).on("pagecreate","#PAGE_MISSION",function(){
-  $("#nextMission").on("touchstart",function(){
+$(document).on("pagecreate","#PAGE_MISSION",function(e){
+  $("#nextMission").on("touchstart click",function(){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
     selectedTablesForTest = [];
     selectedRandomForTest = false;
   	for (i = 0; i<missions[missionNr][0].length; i++) {
