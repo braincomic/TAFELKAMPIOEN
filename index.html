@@ -2,14 +2,21 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
 
-
-<link rel="stylesheet" href="lib/jquery.mobile.custom.structure.min.css">
-<link rel="stylesheet" href="lib/jquery.mobile.custom.theme.min.css">
+<title>Tafelkampioen</title>
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
-<script src="lib/jquery-1.11.1.min.js"></script>
-<script src="lib/jquery.mobile.custom.min.js"></script>
-<script src="lib/jquery.easing.1.3.min.js"></script>
+
+
+
+
+<!-- jquery mobile --> <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.css">
+<!-- jquery -->        <script src="lib/jquery-1.11.1.min.js"></script>
+<!-- jquery mobile --> <script src="lib/jquery.mobile-1.4.4.min.js"></script>
+<!-- easings -->       <script src="lib/jquery.easing.1.3.min.js"></script>
+
+
+
 
 <!-- 
 
@@ -37,7 +44,6 @@ favicon.ico and icon-full.png http://pixabay.com/en/multiply-x-cancel-abort-sign
 
 OVERVIEW EXTERNAL LIBRARIES
 
-- Progress bar old     https://github.com/tolis-e/jQuery-Mobile-Progress-Bar-with-Percentage   -- not anymore used, but replaced by
 - Progress bar         http://workshop.rs/2012/12/animated-progress-bar-in-4-lines-of-jquery/
 - EaseOutBounds        http://easings.net
 - Shake                http://stackoverflow.com/questions/4399005/implementing-jquerys-shake-effect-with-animate
@@ -102,7 +108,7 @@ TO_DO
 <!-- p###########################  CSS  ############################  -->
 <!-- ###############################################################  -->
 
-<style>
+<style type="text/css">
 
 .homeItem {
  margin: 0 !important;
@@ -191,11 +197,11 @@ div.testPerformButtonDigitlike{
 	display: none;
 }
 
-.testStartButtonDigit{
+.testStartButtonDigit, .testStartButtonAll, .testStartButtonStart{
 	background-color: lightgray;
 	border: 1px solid white;
-	height: 100px;
-	line-height: 100px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	height: 80px; /* same as testStartButtonStart and same as line-height */
+	line-height: 80px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
 	font-weight: bold;
 	text-align: center;
 	cursor: pointer; cursor: hand; /* different browsers use different names */
@@ -206,7 +212,7 @@ div.testPerformButtonDigitlike{
 	border: 1px solid black;
 }
 
-#testStartButtonRandom.testStartButtonDigitlikeSelected {
+#testStartButtonAll.testStartButtonDigitlikeSelected {
 	background-color: #FFCC66;
 	border: 1px solid black;
 }
@@ -214,8 +220,8 @@ div.testPerformButtonDigitlike{
 #testStartButtonStart {
   background: #AAFF88; /* #66CC66 darker green */
 	border: 1px solid white;
-	height: 100px;
-	line-height: 100px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	height: 80px; /* same as testStartButtonDigit and same as line-height */
+	line-height: 80px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
 	font-weight: bold;
 	text-align: center;
 	cursor: pointer; cursor: hand; /* different browsers use different names */
@@ -280,7 +286,7 @@ var nrQuestionsPerNTafel = [11, 21, 30, 38, 45, 51, 56, 60, 63, 65, 66] ;
 
 
 // Lijst missies:
-// 1. lijst van tafels. Leeg indien random.
+// 1. lijst van tafels
 // 2. tijd
 
 var missions = [
@@ -517,7 +523,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
     <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
       <li id="homeQuiz">
         <a href="#PAGE_TEST_START" data-transition="slide">
-        <img src="img_test.png">
+        <img src="img_test.png" alt="Quiz">
         <h2>Quiz</h2>
         <p>Oefen een bepaalde tafel.</p>
         </a>
@@ -526,7 +532,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
     <ul data-role="listview" data-inset="true" id="ulHomeMission" class="homeItem">
       <li id="homeMission">
         <a href="#PAGE_MISSION" data-transition="flow">
-        <img src="img_mission.png">
+        <img src="img_mission.png" alt="Missie">
         <h2>Missie</h2>
         <p>Voltooi de volgende missie.</p>
         </a>
@@ -535,7 +541,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
     <ul data-role="listview" data-inset="true" id="ulHomeStats" class="homeItem">
       <li id="homeStats">
         <a href="#PAGE_STATS" data-transition="turn">
-        <img src="img_stats.png">
+        <img src="img_stats.png" alt="Stats">
         <h2>Statistieken</h2>
         <p>Welke tafel kan je het beste?</p>
         </a>
@@ -581,6 +587,7 @@ function shuffle(array) {
 
 // display (only display!) the question with number 'questionNr' to the screen
 function displayNewQuestion() {
+	// Ask   A x B   or   B x A ?
 	if (Math.random()>0.5) {
 		$("#testPerformQuestion").text(""+listOfQuestions[questionNr][0]+" x "+listOfQuestions[questionNr][1]+" ");
 	} else {
@@ -633,19 +640,45 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
  	
  	inputIsBlocked = false;
  	
-  // when you select a digit, then highlight it and unhighlight the random button
+  // When you select a digit, then highlight it.
+  // Unhighlight or hightlight the ALL button depending on how many tables are chosen
   $("div.testStartButtonDigit").on("touchstart click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
     $(this).toggleClass("testStartButtonDigitlikeSelected");
-    $("#testStartButtonRandom").removeClass("testStartButtonDigitlikeSelected");
+    
+    // Unhighlight or hightlight the ALL button depending on how many tables are chosen
+    var nrDigitsSelectedBefore = $("div.testStartButtonDigitlikeSelected.testStartButtonDigit").length;
+    if (nrDigitsSelectedBefore <= 10) {
+    	// unselect the ALL button
+    	$("#testStartButtonAll").removeClass("testStartButtonDigitlikeSelected");
+    }
+    else {
+    	// select the ALL button
+    	$("#testStartButtonAll").addClass("testStartButtonDigitlikeSelected");
+    }
   });
   
-  // when you select the random button, then highlight it and unhighlight the digit buttons
-  $("#testStartButtonRandom").on("touchstart click",function(e){
+  // when you select the ALL button, then highlight it and highlight all digit buttons
+  // UNLESS all digits were already selected. In this case, unselect them all
+  $("#testStartButtonAll").on("touchstart click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
-    $("div.testStartButtonDigit").removeClass("testStartButtonDigitlikeSelected");
-    $(this).toggleClass("testStartButtonDigitlikeSelected");
+    var nrDigitsSelectedBefore = $("div.testStartButtonDigitlikeSelected.testStartButtonDigit").length;
+    if (nrDigitsSelectedBefore <= 10) {
+    	// select them all!
+    	$("div.testStartButtonDigit").addClass("testStartButtonDigitlikeSelected");
+    	// and select this ALL button
+    	$("#testStartButtonAll").addClass("testStartButtonDigitlikeSelected");
+    }
+    else {
+    	// deselect them all!
+    	$("div.testStartButtonDigit").removeClass("testStartButtonDigitlikeSelected");
+    	// and deselect this ALL button
+    	$("#testStartButtonAll").removeClass("testStartButtonDigitlikeSelected");
+    }
+    //$(this).toggleClass("testStartButtonDigitlikeSelected");
   });
+  
+  
   
   // when you tap START, then...
   
@@ -654,8 +687,6 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
     // check what is selected
     // will be stored in global variable selectedTablesForTest
     selectedTablesForTest = [];
-    selectedRandomForTest = false;
-    if ($( "#testStartButton5" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(5);
     if ($( "#testStartButton0" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(0);
     if ($( "#testStartButton1" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(1);
     if ($( "#testStartButton2" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(2);
@@ -667,32 +698,13 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
     if ($( "#testStartButton8" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(8);
     if ($( "#testStartButton9" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(9);
     if ($( "#testStartButton10" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(10);
-    if ($( "#testStartButtonRandom" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedRandomForTest = true;
     // check if input is OK 
     
-    if (selectedTablesForTest.length == 0 && ! selectedRandomForTest) {
+    if (selectedTablesForTest.length == 0 ) {
     	alert("Fout: selecteer eerst de tafels");
     }
     else {
-    	// generate random digit if needed
-    	if (selectedRandomForTest) {
-    		var number1 = Math.floor(Math.random() * 10.9999);
-    		var number2 = Math.floor(Math.random() * 10.9999);
-    		var number3 = Math.floor(Math.random() * 10.9999);
-    		if (number1 == number2) number2 = number2+1 % 11 ;
-    		if (number1 == number3) number3 = number3+1 % 11 ;
-    		if (number2 == number3) number3 = number3+1 % 11 ;
-    		if (number1 == number2) number2 = number2+1 % 11 ;
-    		if (number1 == number3) number3 = number3+1 % 11 ;
-    		if (number2 == number3) number3 = number3+1 % 11 ;
-    		if (number1 == number2) number2 = number2+1 % 11 ;
-    		if (number1 == number3) number3 = number3+1 % 11 ;
-    		if (number2 == number3) number3 = number3+1 % 11 ;
-    		selectedTablesForTest.push(number1);
-    		selectedTablesForTest.push(number2);
-    		selectedTablesForTest.push(number3);
-    		console.log("Random tafels: "+number1+", "+number2+", "+number3);
-    	}
+    	
     	// Select the questions!
     	insideMission = false;
     	selectQuestions();
@@ -706,7 +718,8 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
     	
 	    // go to the following page
 	    $.mobile.changePage('#PAGE_TEST_PERFORM');
-    }
+	  }
+    
   });
   
   
@@ -738,10 +751,10 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
         <div class="ui-block-c testStartButtonDigit" id="testStartButton9" >9</div>
         <div class="ui-block-a testStartButtonDigit" id="testStartButton10">10</div>
         <div class="ui-block-b testStartButtonDigit" id="testStartButton0" >0</div>
-        <div class="ui-block-c testStartButtonDigit" id="testStartButtonRandom">Random</div>
+        <div class="ui-block-c testStartButtonAll"   id="testStartButtonAll">Alle</div>
     </div>
    	<div class="ui-grid-solo" >
-    	<div class="testStartButtonDigitlike" id="testStartButtonStart">START</div>
+    	<div class="testStartButtonStart" id="testStartButtonStart">START</div>
   	</div>
 	  
     
@@ -879,7 +892,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   	//    -> save stats
   	//    -> reset answer
   	//    -> show new question (red)
-  	var numberClicked = parseInt($(this).attr("digitValue"));
+  	var numberClicked = parseInt($(this).attr("data-digitValue"));
   	// check if correct
   	var newAnswerAsInt = 10*intermediateAnswer+numberClicked;
   	var newAnswerAsString = ""+newAnswerAsInt;
@@ -899,9 +912,13 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 	  		timeStartQuestion = new Date().getTime();
 	  		// GUI
 	  		$("#testPerformCorrect").show();
+	  		//testPerformButtonCorrectAnswerGiven
+	  		var colr = $(".testPerformButtonDigitlike").css("background-color");
+	  		$(".testPerformButtonDigitlike").css("background-color", "#00FF00");
 		    setTimeout(function(){
 		    	$("#testPerformCorrect").hide();
-		    }, 300);
+		    	$(".testPerformButtonDigitlike").css("background-color", colr);
+		    }, 250); // same value as below for nice effect
 	  	} else { // test is finished
 	  		testIsFinished();
 	  	}
@@ -964,7 +981,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
     mydiv.css('background-color', '#FFFFF2');
     setTimeout(function(){
     	$("div.testPerformButtonDigitlike").css('background-color', '#cccccc');
-    }, 200);
+    }, 250); // same value as above for nice effect
   } // end if input is not blocked
   });
 
@@ -1004,18 +1021,18 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   	</div>
   	
    	<div class="ui-grid-b" id="testPerformButtonPaneButtom">
-        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton1" digitValue="1" >1</div>
-        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton2" digitValue="2" >2</div>
-        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton3" digitValue="3" >3</div>
-        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton4" digitValue="4" >4</div>
-        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton5" digitValue="5" >5</div>
-        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton6" digitValue="6" >6</div>
-        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton7" digitValue="7" >7</div>
-        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton8" digitValue="8" >8</div>
-        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton9" digitValue="9" >9</div>
-        <div class="ui-block-a testPerformButtonDigitlike                       " id="testPerformButtonBack" digitValue="-1" >&larr;</div>
-        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton0"  digitValue="0" >0</div>
-     <!--   <div class="ui-block-c testPerformButtonDigitlike                       " id="testPerformButtonOK" digitValue="10" >OK</div> -->
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton1" data-digitValue="1" >1</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton2" data-digitValue="2" >2</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton3" data-digitValue="3" >3</div>
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton4" data-digitValue="4" >4</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton5" data-digitValue="5" >5</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton6" data-digitValue="6" >6</div>
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton7" data-digitValue="7" >7</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton8" data-digitValue="8" >8</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton9" data-digitValue="9" >9</div>
+        <div class="ui-block-a testPerformButtonDigitlike                       " id="testPerformButtonBack" data-digitValue="-1" >&larr;</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton0"  data-digitValue="0" >0</div>
+     <!--   <div class="ui-block-c testPerformButtonDigitlike                       " id="testPerformButtonOK" data-digitValue="10" >OK</div> -->
     </div>
   	
   	
@@ -1114,7 +1131,7 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
 
    <div data-role="main" class="ui-content">
    	
-    <h2 id="resultScoreLine"></h2>
+    <h2 id="resultScoreLine">Score:</h2> <!-- to be filled out dynamically -->
     <h3 id="resultScoreLineMissieGeslaagd" >Missie geslaagd</h3>
     <h3 id="resultScoreLineMissieGefaald" >Missie gefaald</h3>
     
@@ -1221,7 +1238,6 @@ $(document).on("pagecreate","#PAGE_MISSION",function(e){
   $("#nextMission").on("touchstart click",function(){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
     selectedTablesForTest = [];
-    selectedRandomForTest = false;
   	for (i = 0; i<missions[missionNr][0].length; i++) {
   		selectedTablesForTest.push(missions[missionNr][0][i]);
   	}
@@ -1262,8 +1278,8 @@ $(document).on("pagecreate","#PAGE_MISSION",function(e){
     <ul data-role="listview" data-inset="true" id="nextMission">
       <li>
         <a href="#">
-        <img src="img_mission.png" id="nextMissionPicture" >
-        <p>Los de <span id="missionTableText"></span> op</span></p>
+        <img src="img_mission.png" id="nextMissionPicture" alt="Volgende missie">
+        <p>Los de <span id="missionTableText"></span> op</p>
         <p>zonder fouten</p>
         <p>in <span id="missionTimeText"></span> seconden!</p>
         </a>
