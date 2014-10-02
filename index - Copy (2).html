@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<link rel="stylesheet" href="lib/jquery.mobile.custom.structure.min.css">
+<link rel="stylesheet" href="lib/jquery.mobile.custom.theme.min.css">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+<script src="lib/jquery-1.11.1.min.js"></script>
+<script src="lib/jquery.mobile.custom.min.js"></script>
+<script src="lib/jquery.easing.1.3.min.js"></script>
+
+<!-- 
+
+OVERVIEW PAGES:
+
+PAGE_HOME
+** PAGE_TEST_START
+  ** PAGE_TEST_PERFORM
+    ** PAGE_TEST_RESULT
+** PAGE_MISSION
+** PAGE_STATS
+
+
+
+OVERVIEW IMAGES (always from public domain)
+
+img_test.png        634 x 640     http://pixabay.com/en/checkbox-check-mark-mark-check-303113/
+img_mission.png     640 x 640     http://pixabay.com/en/bull-s-eye-target-butt-object-aim-147729/
+img_stats.png       640 x 554     http://pixabay.com/en/flat-icon-bar-graphics-statistics-35773/
+
+favicon.ico and icon-full.png http://pixabay.com/en/multiply-x-cancel-abort-sign-303378/
+
+
+
+
+OVERVIEW EXTERNAL LIBRARIES
+
+- Progress bar old     https://github.com/tolis-e/jQuery-Mobile-Progress-Bar-with-Percentage   -- not anymore used, but replaced by
+- Progress bar         http://workshop.rs/2012/12/animated-progress-bar-in-4-lines-of-jquery/
+- EaseOutBounds        http://easings.net
+- Shake                http://stackoverflow.com/questions/4399005/implementing-jquerys-shake-effect-with-animate
+
+
+OVERVIEW LOCAL STORAGE
+localStorage["localStorageTableData"]
+Array of arrays
+[i][0]  digit1 0..10       7
+[i][1]  digit2 >= digit1   8
+[i][2]  correct result     56
+[i][3]  times asked        4
+[i][4]  times correct      3
+[i][5]  total time (s)     26.41
+[i][6]  score 50%          7.35
+[i][7]  score 75%          6.22
+[i][8]  score 90%          5.21
+[i][9]  the index itself   120
+[i][10] last time          4.22
+[i][11] avg time           5.42
+[i][12] last time correct  1
+[i][13] perc correct       75.
+[i][14] CALC: not used     0
+[i][15] CALC: not used     0
+This contains only one record per vermeningvuldiging.
+Bijvoorbeeld 7x8 en 8x7 zijn dezelfde.
+We kiezen arbitrair dat de eerste de kleinste is.
+0 0
+0 1
+0 ..
+0 10
+1 1
+1 2
+1 ..
+1 10
+2 2
+...
+8 8
+8 9
+8 10
+9 9
+9 10
+10 10
+Zo is het wel niet evident om juiste index terug te vinden a.d.h.v. de twee cijfers.
+Daarom extra tabel met mapping van de cijfers naar de juiste index:
+localStorage["localStorageTableIndex"]. Is een tabel, gebruik: localStorage["localStorageTableIndex"][11*d1+d2] geeft index terug, symmetrisch.
+Hoe localStorage hier gebruikt wordt in combinatie met JSON:
+http://mkaz.com/2010/11/07/how-to-use-html5-local-storage/
+
+
+
+
+
+TO_DO
+- vervang alerts doe mooiere alerts
+
+-->
+
+
+
+<!-- ###############################################################  -->
+<!-- p###########################  CSS  ############################  -->
+<!-- ###############################################################  -->
+
+<style>
+
+.homeItem {
+ margin: 0 !important;
+}
+
+#homeQuiz, #homeMission, #homeStats {
+ display: none;
+	opacity : 1; /* old, was used to animate opacity*/
+}
+
+.ui-block-a .ui-btn, .ui-block-b .ui-btn, .ui-block-c .ui-btn {
+    margin: 0 !important;
+}
+
+
+#missionProgressBar {
+        width: 100%;
+        height: 22px;
+        border: 1px solid #111;
+        background-color: #292929;
+}
+ 
+#missionProgressBar div {
+        height: 100%;
+        color: #fff;
+        text-align: right;
+        line-height: 22px; /* same as #missionProgressBar height if we want text middle aligned */
+        width: 0;
+        background-color: #0099ff; 
+}
+
+div.fullWidthAndBorder {
+    width: 100%;
+    border: 1px solid black;
+    display: inline-block;
+}
+
+div.testPerformButtonDigitlikeOld {
+    display: inline-block;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    width: calc(33.333% - 10px);
+    height: 100px;
+    margin: 5px;
+    background: #cccccc; /* light grey */
+    border: 1px solid #c2c2c2;
+    float: left;
+    
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100px;       /* the same as your div height */
+    
+    cursor: pointer; cursor: hand; /* different browsers use different names */
+    
+    /* font */
+    font-size: 30px;
+}
+
+div.testPerformButtonDigitlike{
+	background-color: lightgray;
+	border: 1px solid white;
+	height: 100px;
+	line-height: 100px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer; cursor: hand; /* different browsers use different names */
+}
+
+/* the display */
+#testPerformQuestionAnswer {
+    float: left;
+    width: calc(33.333% - 10px);
+    font-size: 40px;
+    
+    text-align: left;
+    vertical-align: middle;
+    line-height: 80px;
+}
+
+#testPerformCorrect {
+	color: #00AA00;
+	display: none;
+}
+#testPerformWrong {
+	color: red;
+	display: none;
+}
+
+.testStartButtonDigit, .testStartButtonAll{
+	background-color: lightgray;
+	border: 1px solid white;
+	height: 80px; /* same as testStartButtonStart and same as line-height */
+	line-height: 80px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer; cursor: hand; /* different browsers use different names */
+}
+
+.testStartButtonDigitlikeSelected {
+	background-color: lightyellow;
+	border: 1px solid black;
+}
+
+#testStartButtonAll.testStartButtonDigitlikeSelected {
+	background-color: #FFCC66;
+	border: 1px solid black;
+}
+
+#testStartButtonStart {
+  background: #AAFF88; /* #66CC66 darker green */
+	border: 1px solid white;
+	height: 80px; /* same as testStartButtonDigit and same as line-height */
+	line-height: 80px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer; cursor: hand; /* different browsers use different names */
+}
+
+
+#resultScoreLineMissieGeslaagd {
+    color: green;
+    display: none;
+}
+#resultScoreLineMissieGefaald {
+    color: red;
+    display: none;
+}
+
+#homeDebugPane, 
+#missionDebugPane {
+	display: none;
+}
+
+tr{
+border-bottom: 1px solid #d6d6d6;
+}
+
+.redClass{
+	color: red;
+}
+
+</style>
+
+
+<!-- ###############################################################  -->
+<!-- p#################  GLOBAL VARS AND SCRIPTS  ##################  -->
+<!-- ###############################################################  -->
+
+<script>
+// global variables
+var selectedTablesForTest = [] ;
+var sequenceTables = [2, 10, 5, 4, 3, 6, 8, 9, 7];
+var lengthLocalStorageTableData = 16;
+
+// from local storage
+var tableData;
+var tableIndex;
+var missionNr;
+
+var listOfQuestions;
+var questionNr;
+var intermediateAnswer ;
+
+var insideMission ;
+var missionTimeAllowed ;
+
+var timeStartTest ;     // milliseconds
+var timeStartQuestion ; // milliseconds
+var totalTimeThisTest;  // milliseconds
+
+var inputIsBlocked ;
+
+// how many questions do we have when we are testing 3 tables (all multiplications)? -> nrQuestionsPerNTafel[3-1]
+var nrQuestionsPerNTafel = [11, 21, 30, 38, 45, 51, 56, 60, 63, 65, 66] ;
+
+
+// Lijst missies:
+// 1. lijst van tafels
+// 2. tijd
+
+var missions = [
+	// +tafel 1
+	[ [1], [3] ],
+	[ [1], [2] ],
+	// +tafel 2
+	[ [2], [3] ],
+	[ [1,2], [2,3] ],
+	[ [1,2], [2,2] ],
+	// +tafel 10
+	[ [10], [3] ],
+	[ [2, 10], [2, 3] ],
+	[ [1], [0] ],
+	[ [1, 2, 10], [2, 2, 1] ],
+	// +tafel 0
+	[ [0, 2, 10], [1, 2, 1] ],
+	// +tafel 5
+	[ [5], [3] ],
+	[ [5, 10], [2, 2] ],
+	[ [5], [2] ],
+	[ [2, 5], [2, 2] ],
+	[ [1, 5], [1, 2] ],
+	[ [2, 5, 10], [1, 2, 1] ],
+	[ [2], [1] ],
+	// +tafel 4
+	[ [4], [3] ],
+	[ [4, 5, 10], [2, 2, 2] ],
+	[ [4, 2, 5], [2, 1, 2] ],
+	[ [4], [2] ],
+	[ [4, 0], [1, 1] ],
+	[ [0, 2], [0, 0] ],
+	// +tafel 3
+	[ [3], [3] ],
+	[ [2, 3], [2, 2] ],
+	[ [3, 4], [2, 1] ],
+	[ [5], [1] ],
+	[ [2, 3, 5, 10], [1, 2, 1, 1] ],
+	[ [3], [1] ],
+	[ [2], [0] ],
+	// +tafel 6
+	[ [6], [3] ],
+	[ [4], [1] ],
+	[ [6], [2] ],
+	[ [3, 6], [1, 2] ],
+	[ [3, 4, 6], [1, 1, 2] ],
+	[ [5], [0] ],
+	[ [6], [1] ],
+	[ [6], [0] ],
+	// +tafel 8
+	[ [8], [3] ],
+	[ [8], [2] ],
+	[ [3, 8], [1, 2] ],
+	[ [4], [0] ],
+	[ [4, 6, 8], [1, 1, 2] ],
+	[ [3], [0] ],
+	[ [8], [1] ],
+	[ [0, 2, 3, 4, 5, 10], [0, 1, 1, 1, 1, 1] ],
+	// +tafel 9
+	[ [9], [3] ],
+	[ [3, 9], [2, 2] ],
+	[ [9, 10], [2, 1] ],
+	[ [9], [2] ],
+	[ [8, 9], [2, 2] ],
+	[ [3, 6, 9], [2, 1, 2] ],
+	[ [9], [1] ],
+	[ [2, 4, 6, 8, 10], [1, 1, 1, 2, 1] ],
+	[ [3, 4, 6, 8, 9], [1, 1, 1, 2, 1] ],
+	[ [10], [0] ],
+	// +tafel 7
+	[ [7], [3] ],
+	[ [2, 3, 7], [1, 1, 2] ],
+	[ [6, 8, 9], [2, 1, 1] ],
+	[ [6, 7, 8, 9], [1, 1, 1, 1] ],
+	[ [7], [2] ],
+	[ [7], [1] ],
+	[ [7], [0] ],
+	[ [9], [0] ],
+	[ [8], [0] ],
+	[ [3, 7], [0, 0] ],
+	[ [7, 8], [0, 0] ],
+	[ [7, 8, 9], [0, 0, 0] ],
+	[ [0, 2, 4, 6, 8, 10], [1, 1, 1, 1, 1, 1] ],
+	[ [1, 3, 5, 7, 9], [1, 1, 1, 1, 1] ],
+	[ [2, 3, 5, 6, 8], [0, 0, 0, 1, 1] ],
+	[ [4, 7, 8, 9], [0, 0, 0, 1] ],
+	[ [3, 8, 9, 7], [0, 0, 0, 0] ],
+	[ [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0] ],
+	[ [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ]
+	];
+
+
+speedPerQuestion = [2, 2.5, 5, 10];
+// 0 - 2.0 is supersnel
+// 1 - 2.5 is erg snel
+// 2 - 5.0 is te doen
+// 3 - 10. is traag
+
+// Save the data table to local storage
+function saveToLocalStorage() {
+	localStorage.setItem("localStorageTableData",   JSON.stringify(tableData));
+	localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex)); // not needed, because doesn't change
+	localStorage.setItem("localStorageMissionNumber", missionNr);
+}
+
+// Retrieve the data from local storage
+function getFromLocalStorage() {
+	var storedData = localStorage.getItem("localStorageTableData");
+	if (storedData) {
+		tableData = JSON.parse(storedData);
+	}
+	var storedIndex = localStorage.getItem("localStorageTableIndex");
+	if (storedIndex) {
+		tableIndex = JSON.parse(storedIndex);
+	}
+	missionNr = localStorage.getItem("localStorageMissionNumber");
+}
+
+
+
+
+</script>
+
+
+
+</head>
+<body>
+
+
+
+<!-- ###############################################################  -->
+<!-- p########################  PAGE_HOME  #########################  -->
+<!-- ###############################################################  -->
+
+<script>
+
+
+	
+// Initialize the local storage (table and index).
+// Warning: this will eraze any already existing data
+function initializeLocalStorage() {
+	$("#homeDebugPane").append("creating local storage<br>");
+	console.log("creating local storage");
+	// create "structure"
+	tableData = new Array();
+	tableIndex = new Array();
+	var counter = 0;
+	for (var d1 = 0; d1 <= 10; d1++) {
+		for (var d2 = d1; d2 <= 10; d2++) {
+			console.log(d1+"x"+d2);
+			tableData.push(new Array(lengthLocalStorageTableData));
+			tableData[counter][0]  = d1;       // [i][0]  digit1 0..10       7    
+			tableData[counter][1]  = d2;       // [i][1]  digit2 >= digit1   8    
+			tableData[counter][2]  = d1*d2;    // [i][2]  correct result     56   
+			tableData[counter][3]  = 0;        // [i][3]  times asked        4    
+			tableData[counter][4]  = 0;        // [i][4]  times correct      3    
+			tableData[counter][5]  = 0;        // [i][5]  total time (s)     26.41
+			tableData[counter][6]  = 0;        // [i][6]  score 50%          7.35 
+			tableData[counter][7]  = 0;        // [i][7]  score 75%          6.22 
+			tableData[counter][8]  = 0;        // [i][8]  score 90%          5.21 
+			tableData[counter][9]  = counter;  // [i][9]  the index itself   120
+			tableData[counter][10] = 0;        // [i][10] last time          4.02
+			tableData[counter][11] = 0;        // [i][11] avg time           5.41    
+			tableData[counter][12] = 0;        // [i][12] last time correct  1    
+			tableData[counter][13] = 0;        // [i][13] perc correct       75.   
+			tableData[counter][14] = 0;        // [i][14] CALC: not used     0    
+			tableData[counter][15] = 0;        // [i][15] CALC: not used     0    
+			// create index to make retrieving index easily
+			tableIndex[11*d1+d2] = counter;
+			tableIndex[11*d2+d1] = counter;
+			counter++;
+		}
+	}
+	localStorage.setItem("localStorageTableData",   JSON.stringify(tableData));
+	localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex));
+	// mission nr
+	missionNr = 0 ;
+	localStorage.setItem("localStorageMissionNumber", missionNr);
+	$("#homeDebugPane").append("MissionNr set to "+missionNr+": "+(localStorage.getItem("localStorageMissionNumber"))+"<br>");
+	$("#homeDebugPane").append("missions.length"+missions.length+"<br>");
+	
+}
+
+// When home page is loaded, initialize local storage is not yet done.
+// And retrieve local storage values.
+$(document).on("pagecreate","#PAGE_HOME",function(){
+	// make local storage if it does not exist yet
+	if(typeof localStorage["localStorageTableData"] === 'undefined')  {
+		initializeLocalStorage();
+	}
+	getFromLocalStorage();
+	
+	
+
+});
+
+
+
+
+
+//$(document).on("pageshow","#PAGE_HOME",function(){ // When entering pagetwo
+//  $("#homeQuiz").animate({opacity:'1'},250, function(){
+//  $("#homeMission").animate({opacity:'1'},250, function(){
+//  $("#homeStats").animate({opacity:'1'},250);
+//});
+//});   
+ 
+$(document).on("pageshow","#PAGE_HOME",function(){
+	
+		    setTimeout(function(){
+	$("#homeQuiz").slideDown("slow","easeOutBounce",function() {
+	$("#homeMission").slideDown("slow","easeOutBounce",function() {
+	$("#homeStats").slideDown("slow","easeOutBounce");
+	});
+	});
+		    }, 1000);
+		    
+	
+
+});
+  	
+
+</script>
+
+<div data-role="page" id="PAGE_HOME">
+	
+  <div data-role="header">
+    <h1>Tafelkampioen</h1>
+  </div>
+
+   <div data-role="main" class="ui-content">
+   	
+    <h2>Word tafelkampioen!</h2>
+    <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
+      <li id="homeQuiz">
+        <a href="#PAGE_TEST_START" data-transition="slide">
+        <img src="img_test.png">
+        <h2>Quiz</h2>
+        <p>Oefen een bepaalde tafel.</p>
+        </a>
+      </li>
+    </ul>
+    <ul data-role="listview" data-inset="true" id="ulHomeMission" class="homeItem">
+      <li id="homeMission">
+        <a href="#PAGE_MISSION" data-transition="flow">
+        <img src="img_mission.png">
+        <h2>Missie</h2>
+        <p>Voltooi de volgende missie.</p>
+        </a>
+      </li>
+    </ul>
+    <ul data-role="listview" data-inset="true" id="ulHomeStats" class="homeItem">
+      <li id="homeStats">
+        <a href="#PAGE_STATS" data-transition="turn">
+        <img src="img_stats.png">
+        <h2>Statistieken</h2>
+        <p>Welke tafel kan je het beste?</p>
+        </a>
+      </li>
+    </ul>
+    
+    <div id="homeDebugPane"></div>
+    
+  </div> <!-- data-role="main" -->
+  
+</div> <!-- data-role="page" id="PAGE_HOME" -->
+
+
+
+<!-- ###############################################################  -->
+<!-- p#####################  PAGE_TEST_START  ######################  -->
+<!-- ###############################################################  -->
+
+
+<script>
+
+
+// shuffle array:
+// http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex ;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+  return array;
+}
+
+
+// display (only display!) the question with number 'questionNr' to the screen
+function displayNewQuestion() {
+	// Ask   A x B   or   B x A ?
+	if (Math.random()>0.5) {
+		$("#testPerformQuestion").text(""+listOfQuestions[questionNr][0]+" x "+listOfQuestions[questionNr][1]+" ");
+	} else {
+		$("#testPerformQuestion").text(""+listOfQuestions[questionNr][1]+" x "+listOfQuestions[questionNr][0]+" ");
+	}
+}
+
+
+// display (only display!) the partial answer 'intermediateAnswer' to the screen
+function displayPartialAnswer() {
+	if (intermediateAnswer == 0) {
+		$("#testPerformEqual").text("");
+		$("#testPerformAnswer").text("");
+	} else {
+		$("#testPerformEqual").text(" = ");
+		$("#testPerformAnswer").text(intermediateAnswer);
+	}
+}
+
+// display (only display!) the partial answer 'intermediateAnswer' to the screen WHICH IS WRONG
+function displayPartialAnswerWrong() {
+	displayPartialAnswer();
+	$("#testPerformQuestion").addClass("redClass");
+	$("#testPerformEqual").addClass("redClass");
+	$("#testPerformAnswer").addClass("redClass");
+}
+
+// de gebruiker heeft tafels geselecteerd.
+// Nu selecteren we de vragen.
+function selectQuestions() {
+	var possibleQuestions = new Array();
+	getFromLocalStorage(); // make sure tableData is known
+	for (i = 0; i<tableData.length; i++) {
+		var d1 = tableData[i][0];
+		var d2 = tableData[i][1];
+		if ($.inArray(d1, selectedTablesForTest) >= 0 || $.inArray(d2, selectedTablesForTest) >= 0 ) {
+			possibleQuestions.push(tableData[i]);
+			console.log(""+d1+" X "+d2+" : Selected");
+		}
+		else {
+			console.log(""+d1+" X "+d2+" : Not selected");
+		}
+	}
+	shuffle(possibleQuestions);
+	listOfQuestions = possibleQuestions;
+}
+
+
+$(document).on("pagecreate","#PAGE_TEST_START",function(){
+ 	
+ 	inputIsBlocked = false;
+ 	
+  // When you select a digit, then highlight it.
+  // Unhighlight or hightlight the ALL button depending on how many tables are chosen
+  $("div.testStartButtonDigit").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
+    $(this).toggleClass("testStartButtonDigitlikeSelected");
+    
+    // Unhighlight or hightlight the ALL button depending on how many tables are chosen
+    var nrDigitsSelectedBefore = $("div.testStartButtonDigitlikeSelected.testStartButtonDigit").length;
+    if (nrDigitsSelectedBefore <= 10) {
+    	// unselect the ALL button
+    	$("#testStartButtonAll").removeClass("testStartButtonDigitlikeSelected");
+    }
+    else {
+    	// select the ALL button
+    	$("#testStartButtonAll").addClass("testStartButtonDigitlikeSelected");
+    }
+  });
+  
+  // when you select the ALL button, then highlight it and highlight all digit buttons
+  // UNLESS all digits were already selected. In this case, unselect them all
+  $("#testStartButtonAll").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
+    var nrDigitsSelectedBefore = $("div.testStartButtonDigitlikeSelected.testStartButtonDigit").length;
+    if (nrDigitsSelectedBefore <= 10) {
+    	// select them all!
+    	$("div.testStartButtonDigit").addClass("testStartButtonDigitlikeSelected");
+    	// and select this ALL button
+    	$("#testStartButtonAll").addClass("testStartButtonDigitlikeSelected");
+    }
+    else {
+    	// deselect them all!
+    	$("div.testStartButtonDigit").removeClass("testStartButtonDigitlikeSelected");
+    	// and deselect this ALL button
+    	$("#testStartButtonAll").removeClass("testStartButtonDigitlikeSelected");
+    }
+    //$(this).toggleClass("testStartButtonDigitlikeSelected");
+  });
+  
+  // when you tap START, then...
+  
+  $("#testStartButtonStart").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
+    // check what is selected
+    // will be stored in global variable selectedTablesForTest
+    selectedTablesForTest = [];
+    selectedRandomForTest = false;
+    if ($( "#testStartButton5" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(5);
+    if ($( "#testStartButton0" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(0);
+    if ($( "#testStartButton1" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(1);
+    if ($( "#testStartButton2" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(2);
+    if ($( "#testStartButton3" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(3);
+    if ($( "#testStartButton4" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(4);
+    if ($( "#testStartButton5" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(5);
+    if ($( "#testStartButton6" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(6);
+    if ($( "#testStartButton7" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(7);
+    if ($( "#testStartButton8" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(8);
+    if ($( "#testStartButton9" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(9);
+    if ($( "#testStartButton10" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedTablesForTest.push(10);
+    if ($( "#testStartButtonAll" ).hasClass( "testStartButtonDigitlikeSelected" ) ) selectedRandomForTest = true;
+    // check if input is OK 
+    
+    if (selectedTablesForTest.length == 0 && ! selectedRandomForTest) {
+    	alert("Fout: selecteer eerst de tafels");
+    }
+    else {
+    	// generate random digit if needed
+    	if (selectedRandomForTest) {
+    		var number1 = Math.floor(Math.random() * 10.9999);
+    		var number2 = Math.floor(Math.random() * 10.9999);
+    		var number3 = Math.floor(Math.random() * 10.9999);
+    		if (number1 == number2) number2 = number2+1 % 11 ;
+    		if (number1 == number3) number3 = number3+1 % 11 ;
+    		if (number2 == number3) number3 = number3+1 % 11 ;
+    		if (number1 == number2) number2 = number2+1 % 11 ;
+    		if (number1 == number3) number3 = number3+1 % 11 ;
+    		if (number2 == number3) number3 = number3+1 % 11 ;
+    		if (number1 == number2) number2 = number2+1 % 11 ;
+    		if (number1 == number3) number3 = number3+1 % 11 ;
+    		if (number2 == number3) number3 = number3+1 % 11 ;
+    		selectedTablesForTest.push(number1);
+    		selectedTablesForTest.push(number2);
+    		selectedTablesForTest.push(number3);
+    		console.log("Random tafels: "+number1+", "+number2+", "+number3);
+    	}
+    	// Select the questions!
+    	insideMission = false;
+    	selectQuestions();
+    	questionNr = 0;
+    	intermediateAnswer = 0;
+    	displayNewQuestion();
+    	displayPartialAnswer();
+    	// for the first question we give the user extra time
+  		timeStartTest     = new Date().getTime() + 1000;
+  		timeStartQuestion = new Date().getTime() + 1000;
+    	
+	    // go to the following page
+	    $.mobile.changePage('#PAGE_TEST_PERFORM');
+    }
+  });
+  
+  
+});
+
+
+
+</script>
+
+<div data-role="page" id="PAGE_TEST_START">
+	
+  <div data-role="header">
+    <h1>Tafelkampioen</h1>
+  </div>
+
+   <div data-role="main" class="ui-content">
+   	
+   	<h1>Welke tafels wil je oefenen?</h1>
+   	
+   	<div class="ui-grid-b" >
+        <div class="ui-block-a testStartButtonDigit" id="testStartButton1" >1</div>
+        <div class="ui-block-b testStartButtonDigit" id="testStartButton2" >2</div>
+        <div class="ui-block-c testStartButtonDigit" id="testStartButton3" >3</div>
+        <div class="ui-block-a testStartButtonDigit" id="testStartButton4" >4</div>
+        <div class="ui-block-b testStartButtonDigit" id="testStartButton5" >5</div>
+        <div class="ui-block-c testStartButtonDigit" id="testStartButton6" >6</div>
+        <div class="ui-block-a testStartButtonDigit" id="testStartButton7" >7</div>
+        <div class="ui-block-b testStartButtonDigit" id="testStartButton8" >8</div>
+        <div class="ui-block-c testStartButtonDigit" id="testStartButton9" >9</div>
+        <div class="ui-block-a testStartButtonDigit" id="testStartButton10">10</div>
+        <div class="ui-block-b testStartButtonDigit" id="testStartButton0" >0</div>
+        <div class="ui-block-c testStartButtonAll"   id="testStartButtonAll">Alle</div>
+    </div>
+   	<div class="ui-grid-solo" >
+    	<div class="testStartButtonDigitlike" id="testStartButtonStart">START</div>
+  	</div>
+	  
+    
+	  <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
+	  
+  
+  
+  </div> <!-- data-role="main" -->
+  
+</div> <!-- data-role="page" id="PAGE_TEST_START" -->
+
+
+<!-- ###############################################################  -->
+<!-- p####################  PAGE_TEST_PERFORM  #####################  -->
+<!-- ###############################################################  -->
+
+
+<script>
+
+
+// Save the stats quickly in the question array.
+// Not yet in the data table and not yet in the local storage
+function quickUpdateToStats(trueOrFalse) {
+	listOfQuestions[questionNr][3] ++ ; // times asked
+	var timesAsked = listOfQuestions[questionNr][3];
+	if (trueOrFalse) {
+		listOfQuestions[questionNr][4] ++ ; // times correct
+	}
+	// Time needed for this question.
+	// To calculate KPIs, no more than 10 s.
+	// If wrong, always take 10 s.
+	var timeNeeded = new Date().getTime() - timeStartQuestion;
+	timeNeeded /= 1000. ; // from ms to s
+	if (timeNeeded <=0.01) timeNeeded = 0.01;
+	var timeNeededRestricted = timeNeeded;
+	if (timeNeededRestricted > 10.) timeNeededRestricted = 10. ;
+	if (!trueOrFalse) {
+		timeNeededRestricted = 10. ;
+	}
+	listOfQuestions[questionNr][5] += timeNeededRestricted ; // total time (s)
+	// avg time
+	var avgTime = listOfQuestions[questionNr][5] / (0.0+timesAsked);
+	listOfQuestions[questionNr][11]  = avgTime;
+	listOfQuestions[questionNr][13]  = 100. * listOfQuestions[questionNr][4] / timesAsked;
+	 // score 50%
+	if (timesAsked>=2) {
+		listOfQuestions[questionNr][6] = 0.50 * listOfQuestions[questionNr][6] + (1. - 0.50) * timeNeededRestricted ;
+	} else {
+		listOfQuestions[questionNr][6] = avgTime;
+	}
+	// score 75%
+	if (timesAsked>=4) {
+		listOfQuestions[questionNr][7] = 0.75 * listOfQuestions[questionNr][7] + (1. - 0.75) * timeNeededRestricted ; 
+	} else {
+		listOfQuestions[questionNr][7] = avgTime;
+	}
+	// score 90%
+	if (timesAsked>=10) {
+		listOfQuestions[questionNr][8] = 0.90 * listOfQuestions[questionNr][8] + (1. - 0.90) * timeNeededRestricted ; 
+	} else {
+		listOfQuestions[questionNr][8] = avgTime;
+	}
+	// last time
+	listOfQuestions[questionNr][10] = timeNeeded ;
+	// last time correct
+	if (trueOrFalse) listOfQuestions[questionNr][12] = 1 ;
+	else listOfQuestions[questionNr][12] = 0 ;
+}
+
+
+// all the actions required when a test is finished
+function testIsFinished() {
+	console.log("Test is finished");
+	
+	// Save the results to the tableData table
+	// This is not needed, because they are pointing to the same object!
+	// Do it anyway (just to be sure)
+	for (i = 0; i < listOfQuestions.length; i++) {
+		var theTableIndex = listOfQuestions[i][9];
+		// console.log("we are going to overwrite")
+		// console.log(tableData[theTableIndex]);
+		// console.log("with");
+		// console.log(listOfQuestions[i]);
+		tableData[theTableIndex] = listOfQuestions[i];
+	}
+	
+	// save tableData to localStorage
+	saveToLocalStorage();
+	
+	// go to the results page
+	$.mobile.changePage('#PAGE_TEST_RESULT');
+	
+}
+
+
+// source: http://stackoverflow.com/questions/4399005/implementing-jquerys-shake-effect-with-animate
+jQuery.fn.shake = function(intShakes, intDistance, intDuration) {
+    this.each(function() {
+        $(this).css("position","relative"); 
+        for (var x=1; x<=intShakes; x++) {
+        	if (Math.random()>0.5) {
+				        $(this).animate({left:(intDistance*-1)}, (((intDuration/intShakes)/4)))
+				    .animate({left:intDistance}, ((intDuration/intShakes)/2))
+				    .animate({left:0}, (((intDuration/intShakes)/4)));
+				    }
+			    else {
+				        $(this).animate({top:(intDistance*-1)}, (((intDuration/intShakes)/4)))
+				    .animate({top:intDistance}, ((intDuration/intShakes)/2))
+				    .animate({top:0}, (((intDuration/intShakes)/4)));
+			    }
+    }
+  });
+	return this;
+};
+
+
+
+$(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
+ 
+  
+  $(".testPerformButtonDigit").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
+  if (!inputIsBlocked){
+  	// LOGIC
+  	//
+  	// Either
+  	// 1. this is the first correct digit, but not the last one
+  	//    -> remember it
+  	//    -> show it
+  	// 2. this is the last correct digit
+  	//    -> save stats
+  	//    -> reset answer
+  	//    -> show new question (green)
+  	// 3. this is incorrect
+  	//    -> save stats
+  	//    -> reset answer
+  	//    -> show new question (red)
+  	var numberClicked = parseInt($(this).attr("digitValue"));
+  	// check if correct
+  	var newAnswerAsInt = 10*intermediateAnswer+numberClicked;
+  	var newAnswerAsString = ""+newAnswerAsInt;
+  	var correctAnswerAsInt = listOfQuestions[questionNr][2]
+  	var correctAnswerString = ""+correctAnswerAsInt;
+  	console.log("clicked on number "+numberClicked+", until now: "+newAnswerAsString+", correct answer: "+correctAnswerString);
+  	console.log("questionNr: "+questionNr);
+  	console.log("tafel: "+listOfQuestions[questionNr][0]+"x"+listOfQuestions[questionNr][1]+"="+listOfQuestions[questionNr][2]);
+  	if (newAnswerAsInt == correctAnswerAsInt) {
+  		console.log("case 2 - fully correct");
+  		quickUpdateToStats(true);
+  		questionNr++;
+  		intermediateAnswer = 0;
+  		if (questionNr<listOfQuestions.length) { // test not finished
+	  		displayNewQuestion();
+	  		displayPartialAnswer();
+	  		timeStartQuestion = new Date().getTime();
+	  		// GUI
+	  		$("#testPerformCorrect").show();
+		    setTimeout(function(){
+		    	$("#testPerformCorrect").hide();
+		    }, 300);
+	  	} else { // test is finished
+	  		testIsFinished();
+	  	}
+  	}
+  	else if (correctAnswerString.substring(0, newAnswerAsString.length) === newAnswerAsString) {
+  		console.log("case 1 - correct so far");
+  		intermediateAnswer = newAnswerAsInt;
+  		displayPartialAnswer();
+  	} 
+  	else {
+  		console.log("case 3 - not correct");
+  		intermediateAnswer = newAnswerAsInt;
+  		displayPartialAnswerWrong();
+  	
+  	
+  	
+  	/*
+  		console.log("case 3 - not correct");
+  		quickUpdateToStats(false);
+			// block input
+			inputIsBlocked = true;
+			
+			// remove the question and partial answer
+			$("#testPerformQuestion").text("");
+			$("#testPerformEqual").text("");
+			$("#testPerformAnswer").text("");
+			// show solution
+			$("#testPerformWrong").text("FOUT, "+listOfQuestions[questionNr][0]+"x"+listOfQuestions[questionNr][1]+"="+listOfQuestions[questionNr][2]);
+			$("#testPerformWrong").show();
+			
+			// shake, and only continue after the shake
+			var shakingTime = 4000; // ms
+			$("#testPerformButtonPaneButtom").shake(40,50,shakingTime);
+			// only continue after shaking is finished
+			setTimeout(function(){
+				// remove the solution
+				$("#testPerformWrong").hide();
+				
+				// unblock input
+				inputIsBlocked = false;
+	  		questionNr++;
+	  		intermediateAnswer = 0;
+	  		if (questionNr<listOfQuestions.length) { // test not finished
+		  		displayNewQuestion();
+		  		displayPartialAnswer();
+		  		timeStartQuestion = new Date().getTime();
+		  	} else { // test is finished
+		  		testIsFinished();
+		  	}
+    	}, shakingTime+300);
+    */
+    	
+    	
+  	}
+  	
+  	
+  	// GUI STUFF to feel "presslike"
+  	// when you select a digit, then highlight it and unhighlight the random button
+    mydiv = $(this);
+    mydiv.css('background-color', '#FFFFF2');
+    setTimeout(function(){
+    	$("div.testPerformButtonDigitlike").css('background-color', '#cccccc');
+    }, 200);
+  } // end if input is not blocked
+  });
+
+  
+  $("#testPerformButtonBack").on("touchstart click",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
+  	intermediateAnswer = 0;
+		$("#testPerformQuestion").removeClass("redClass");
+		$("#testPerformEqual").removeClass("redClass");
+		$("#testPerformAnswer").removeClass("redClass");
+  	displayPartialAnswer();
+	});
+	
+});
+  	
+
+</script>
+
+
+<div data-role="page" id="PAGE_TEST_PERFORM">
+	
+  <div data-role="header">
+    <h1>Tafelkampioen</h1>
+  </div>
+
+   <div data-role="main" class="ui-content">
+   	
+
+   	<div class="ui-grid-solo" id="testPerformDisplayContainer">
+		    <div id="testPerformQuestionAnswer">
+		    	<span id="testPerformQuestion"></span>
+		    	<span id="testPerformEqual"   ></span>
+		    	<span id="testPerformAnswer"  ></span>
+		    	<span id="testPerformCorrect" >JUIST</span>
+		    	<span id="testPerformWrong"   >FOUT</span>
+		    </div>
+  	</div>
+  	
+   	<div class="ui-grid-b" id="testPerformButtonPaneButtom">
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton1" digitValue="1" >1</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton2" digitValue="2" >2</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton3" digitValue="3" >3</div>
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton4" digitValue="4" >4</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton5" digitValue="5" >5</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton6" digitValue="6" >6</div>
+        <div class="ui-block-a testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton7" digitValue="7" >7</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton8" digitValue="8" >8</div>
+        <div class="ui-block-c testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton9" digitValue="9" >9</div>
+        <div class="ui-block-a testPerformButtonDigitlike                       " id="testPerformButtonBack" digitValue="-1" >&larr;</div>
+        <div class="ui-block-b testPerformButtonDigitlike testPerformButtonDigit" id="testPerformButton0"  digitValue="0" >0</div>
+     <!--   <div class="ui-block-c testPerformButtonDigitlike                       " id="testPerformButtonOK" digitValue="10" >OK</div> -->
+    </div>
+  	
+  	
+  </div> <!-- data-role="main" -->
+  
+</div> <!-- data-role="page" id="PAGE_TEST_PERFORM" -->
+
+<!-- ###############################################################  -->
+<!-- p#####################  PAGE_TEST_RESULT  #####################  -->
+<!-- ###############################################################  -->
+
+<script>
+
+$(document).on("pageshow","#PAGE_TEST_RESULT",function(){
+
+	// fill the title
+	totalTimeThisTest = new Date().getTime() - timeStartTest;
+	totalTimeThisTest /= 1000. ; // from ms to s
+	var myScore = 0;
+	for (i = 0; i<listOfQuestions.length; i++) {
+		if (listOfQuestions[i][12] > 0) {
+			myScore++;
+		}
+	}
+	$("#resultScoreLine").text("Score: "+myScore+"/"+(listOfQuestions.length)+" in "+totalTimeThisTest.toFixed(2)+" s");
+	
+	// if mission, check if mission ack
+	if (insideMission) {
+		if(totalTimeThisTest<missionTimeAllowed && myScore==listOfQuestions.length) {
+			// mission success
+			missionNr ++;
+			saveToLocalStorage();
+			$("#resultScoreLineMissieGeslaagd").show();
+			$("#resultScoreLineMissieGefaald") .hide();
+		}
+		else {
+			// mission failed
+			$("#resultScoreLineMissieGeslaagd").hide();
+			$("#resultScoreLineMissieGefaald") .show();
+		}
+	}
+	
+	// create copy and sort it
+	var listOfQuestionsCopy = listOfQuestions.clone();
+	listOfQuestionsCopy.sort(function (a,b) {
+	    if (a[12] > b[12]) return  1; // first sort on correct or not
+	    if (a[12] < b[12]) return -1;
+	    if (a[10] < b[10]) return  1; // then sort on time needed
+	    if (a[10] > b[10]) return -1;
+	    return 0;
+	});
+	
+	// fill table
+	var r = new Array();
+	var k = -1;
+	for (i = 0; i<listOfQuestionsCopy.length; i++) {
+		// only when at least one time asked
+		if (listOfQuestionsCopy[i][3] > 0) {
+			// if the 75% time is worse than 5s, then color it red
+			if (listOfQuestionsCopy[i][12]<=0){
+				r[++k] ='<tr style="color:red">';
+			} else {
+				r[++k] ='<tr>';
+			}
+			// tafel
+			r[++k] = '<td>';
+			r[++k] = ''+listOfQuestionsCopy[i][0]+'x'+listOfQuestionsCopy[i][1]+'='+listOfQuestionsCopy[i][2];
+			r[++k] = '</td>';
+			// correct or not
+			r[++k] = '<td>';
+			if (listOfQuestionsCopy[i][12]>0) r[++k] = 'OK';
+			else r[++k] = 'FOUT';
+			r[++k] = '</td>';
+			// time needed
+			r[++k] = '<td>';
+			r[++k] = ''+listOfQuestionsCopy[i][10].toFixed(2)+'s';
+			r[++k] = '</td>';
+			
+			r[++k] = '</tr>';
+		}
+	}
+	// append to DOM
+	$('#resultTableBody').html(r.join('')); 
+
+
+});
+	
+</script>
+
+
+<div data-role="page" id="PAGE_TEST_RESULT">
+	
+  <div data-role="header">
+    <h1>Tafelkampioen</h1>
+  </div>
+
+   <div data-role="main" class="ui-content">
+   	
+    <h2 id="resultScoreLine"></h2>
+    <h3 id="resultScoreLineMissieGeslaagd" >Missie geslaagd</h3>
+    <h3 id="resultScoreLineMissieGefaald" >Missie gefaald</h3>
+    
+    <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
+    
+		<table data-role="table" class="ui-responsive" id="resultTable">
+			<thead id="resultTableHead">
+				<tr>
+					<th data-priority="persist">Tafel</th>
+					<th data-priority="2">Correct</th>
+					<th data-priority="3">Tijd</th>
+				</tr>
+			</thead>
+			<tbody id="resultTableBody">
+			</tbody>
+		</table>
+    
+    <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
+    
+  </div> <!-- data-role="main" -->
+  
+</div> <!-- data-role="page" id="PAGE_TEST_RESULT" -->
+
+<!-- ###############################################################  -->
+<!-- p#######################  PAGE_MISSION  #######################  -->
+<!-- ###############################################################  -->
+
+
+<script>
+function progress(percent, $element) {
+    var progressBarWidth = percent * $element.width() / 100;
+    $element.find('div').animate({ width: progressBarWidth }, 500).html(percent + "%&nbsp;");
+}
+function resetProgress($element) {
+    $element.find('div').css('width', '0px').html('');
+}
+
+$(document).on("pagebeforehide","#PAGE_MISSION",function(){ 
+	// reset bar before animating it
+	resetProgress($('#missionProgressBar'));
+});
+
+$(document).on("pageshow","#PAGE_MISSION",function(){ 
+	// make sure we have most updated information from local storage
+	getFromLocalStorage();
+	
+	var myPerc = 100. * missionNr / missions.length;
+	myPerc = parseInt(myPerc);
+	progress(myPerc, $('#missionProgressBar'));
+	
+	// DISPLAY MISSION TEXT
+	// "tafel van 7"
+	// "tafels van 8 en 9"
+	// "tafels van 3, 5 en 9"
+	var textTables = "" ; 
+	if (missions[missionNr][0].length == 1) {
+		textTables = "tafel van "+missions[missionNr][0][0];
+	}
+	else {
+		textTables = "tafels van "+missions[missionNr][0][0];
+		for (i = 1; i<missions[missionNr][0].length-1; i++) {
+			textTables += ", ";
+			textTables += missions[missionNr][0][i];
+		}
+		textTables += " en ";
+		textTables += missions[missionNr][0][missions[missionNr][0].length-1];
+	}
+	console.log("missionTableText="+missionTableText);
+	$("#missionTableText").text(textTables);
+	
+	// CALCULATE AND DISPLAY TIME
+	// aantal vragen
+	var nTables = missions[missionNr][0].length;
+	var nQuestions = nrQuestionsPerNTafel[nTables-1];
+	$("#missionDebugPane").append("nTables="+nTables+"<br>");
+	$("#missionDebugPane").append("nQuestions="+nQuestions+"<br>");
+	console.log("there will be "+nQuestions+" question");
+	// calculate average of the times per question
+	var sumTimePerQuestion = 0;
+	for (i = 0; i<missions[missionNr][1].length; i++) {
+		sumTimePerQuestion += speedPerQuestion[missions[missionNr][1][i]];
+	};
+	$("#missionDebugPane").append("sumTimePerQuestion="+sumTimePerQuestion+"<br>");
+	var avgTimePerQuestion = sumTimePerQuestion/(0.+missions[missionNr][1].length);
+	$("#missionDebugPane").append("avgTimePerQuestion="+avgTimePerQuestion+"<br>");
+	missionTimeAllowed = Math.ceil(avgTimePerQuestion*nQuestions);
+	$("#missionDebugPane").append("missionTimeAllowed="+missionTimeAllowed+"<br>");
+	console.log("nTables="+nTables);
+	console.log("nQuestions="+nQuestions);
+	console.log("sumTimePerQuestion="+sumTimePerQuestion);
+	console.log("avgTimePerQuestion="+avgTimePerQuestion);
+	console.log("missionTimeAllowed="+missionTimeAllowed);
+	$("#missionTimeText").text(missionTimeAllowed);
+	//$('#nextMissionPicture').animate({ width: progressBarWidth }, 500).html(percent + "%&nbsp;");
+	        $("#nextMissionPicture").animate({width: "400px", height: "400px" });
+});
+
+
+
+
+
+
+$(document).on("pagecreate","#PAGE_MISSION",function(e){
+  $("#nextMission").on("touchstart click",function(){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
+    selectedTablesForTest = [];
+    selectedRandomForTest = false;
+  	for (i = 0; i<missions[missionNr][0].length; i++) {
+  		selectedTablesForTest.push(missions[missionNr][0][i]);
+  	}
+  	
+  	// set start mission
+   	// Select the questions!
+   	insideMission = true;
+   	selectQuestions();
+   	questionNr = 0;
+   	intermediateAnswer = 0;
+   	displayNewQuestion();
+   	displayPartialAnswer();
+   	// for the first question we give the user extra time
+  	timeStartTest     = new Date().getTime() + 1000;
+  	timeStartQuestion = new Date().getTime() + 1000;
+   	
+	   // go to the following page
+	   $.mobile.changePage('#PAGE_TEST_PERFORM');
+  });
+ });
+  
+</script>
+
+
+
+<div data-role="page" id="PAGE_MISSION">
+	
+  <div data-role="header">
+    <h1>Tafelkampioen</h1>
+  </div>
+
+   <div data-role="main" class="ui-content">
+   	
+    <div id="missionProgressBar"><div></div></div>
+    
+    <h1>Volgende missie:</h1>
+    
+    <ul data-role="listview" data-inset="true" id="nextMission">
+      <li>
+        <a href="#">
+        <img src="img_mission.png" id="nextMissionPicture" >
+        <p>Los de <span id="missionTableText"></span> op</span></p>
+        <p>zonder fouten</p>
+        <p>in <span id="missionTimeText"></span> seconden!</p>
+        </a>
+      </li>
+    </ul>
+    
+    <div id="missionDebugPane"></div>
+    
+    <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
+    
+  </div> <!-- data-role="main" -->
+  
+</div> <!-- data-role="page" id="PAGE_MISSION" -->
+
+<!-- ###############################################################  -->
+<!-- p########################  PAGE_STATS  ########################  -->
+<!-- ###############################################################  -->
+
+<script>
+	
+Array.prototype.clone = function() {
+    var arr = this.slice(0);
+    for( var i = 0; i < this.length; i++ ) {
+        if( this[i].clone ) {
+            //recursion
+            arr[i] = this[i].clone();
+        }
+    }
+    return arr;
+}
+	
+$(document).on("pageshow","#PAGE_STATS",function(){ // When entering pagetwo
+	// make sure tableData is up to date with local storage
+	getFromLocalStorage();
+	
+	// create copy and sort it
+	var tableDataCopy = tableData.clone();
+	tableDataCopy.sort(function (a,b) {
+	    if (a[7] < b[7]) return  1; // sort on 75% time
+	    if (a[7] > b[7]) return -1;
+	    return 0;
+	});
+	
+	// fill table
+	var r = new Array();
+	var k = -1;
+	for (i = 0; i<tableDataCopy.length; i++) {
+		// only when at least one time asked
+		if (tableDataCopy[i][3] > 0) {
+			// if the 75% time is worse than 5s, then color it red
+			if (tableDataCopy[i][7]>=5.){
+				r[++k] ='<tr style="color:red">';
+			} else {
+				r[++k] ='<tr>';
+			}
+			// tafel
+			r[++k] = '<td>';
+			r[++k] = ''+tableDataCopy[i][0]+'x'+tableDataCopy[i][1]+'='+tableDataCopy[i][2];
+			r[++k] = '</td>';
+			// perc correct
+			r[++k] = '<td>';
+			r[++k] = ''+tableDataCopy[i][13].toFixed(2)+'%';
+			r[++k] = '</td>';
+			// avg time
+			r[++k] = '<td>';
+			r[++k] = ''+tableDataCopy[i][11].toFixed(2)+'s';
+			r[++k] = '</td>';
+			// time 50%
+			r[++k] = '<td>';
+			r[++k] = ''+tableDataCopy[i][6].toFixed(2)+'s';
+			r[++k] = '</td>';
+			// time 75%
+			r[++k] = '<td>';
+			r[++k] = ''+tableDataCopy[i][7].toFixed(2)+'s';
+			r[++k] = '</td>';
+			// time 90%
+			r[++k] = '<td>';
+			r[++k] = ''+tableDataCopy[i][8].toFixed(2)+'s';
+			r[++k] = '</td>';
+			
+			r[++k] = '</tr>';
+		}
+	}
+	// append to DOM
+	$('#statsTableBody').html(r.join('')); 
+});
+
+</script>
+
+<div data-role="page" id="PAGE_STATS">
+	
+  <div data-role="header">
+    <h1>Tafelkampioen</h1>
+  </div>
+
+   <div data-role="main" class="ui-content">
+   	
+    <h2>Statistieken</h2>
+    
+    <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
+    
+		<table data-role="table" class="ui-responsive" id="statsTable">
+			<thead id="statsTableHead">
+				<tr>
+					<th data-priority="persist">Tafel</th>
+					<th data-priority="2">Perc juist</th>
+					<th data-priority="3">Gemid. tijd</th>
+					<th data-priority="5">Tijd 50%</th>
+					<th data-priority="4">Tijd 75%</th>
+					<th data-priority="6">Tijd 90%</th>
+				</tr>
+			</thead>
+			<tbody id="statsTableBody">
+			</tbody>
+		</table>
+<!--
+  <table data-role="table" data-mode="columntoggle" id="statsTable" data-filter="true" data-input="#filterTable-input" class="ui-responsive table-stroke" data-column-btn-theme="b" data-column-btn-text="Kolommen" data-column-popup-theme="a">
+    
+    <thead>
+        <tr>
+            <th data-priority="4">Rank</th>
+            <th data-priority="persist">Tafel</th>
+            <th data-priority="3">Oplossing</th>
+            <th data-priority="1">Juist</th>
+            <th data-priority="2">Tijd</th>
+            <th data-priority="6" style="display:none">Omgekeerde tafel</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr style="color:red">
+          <td>1</td>
+          <td>9X5</td>
+          <td>45</td>
+          <td>75%</td>
+          <td>7.54 s</td>
+          <td style="display:none">5X9</td>
+        </tr>
+        <tr style="color:red">
+          <td>2</td>
+          <td>9X4</td>
+          <td>36</td>
+          <td>78%</td>
+          <td>7.24 s</td>
+          <td style="display:none">4X9</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>8X5</td>
+          <td>40</td>
+          <td>79%</td>
+          <td>5.54 s</td>
+          <td style="display:none">5X8</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>4X3</td>
+          <td>12</td>
+          <td>95%</td>
+          <td>3.01 s</td>
+          <td style="display:none">3X4</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>9X5</td>
+          <td>45</td>
+          <td>75%</td>
+          <td>7.54 s</td>
+          <td style="display:none">5X9</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>4X4</td>
+          <td>36</td>
+          <td>78%</td>
+          <td>7.24 s</td>
+          <td style="display:none">4X4</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>1X3</td>
+          <td>40</td>
+          <td>80%</td>
+          <td>5.54 s</td>
+          <td style="display:none">3X1</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>2X6</td>
+          <td>12</td>
+          <td>95%</td>
+          <td>3.01 s</td>
+          <td style="display:none">6X2</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>9X5</td>
+          <td>45</td>
+          <td>75%</td>
+          <td>7.54 s</td>
+          <td style="display:none">5X9</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>9X4</td>
+          <td>36</td>
+          <td>78%</td>
+          <td>7.24 s</td>
+          <td style="display:none">4X9</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td>8X5</td>
+          <td>40</td>
+          <td>80%</td>
+          <td>5.54 s</td>
+          <td style="display:none">5X8</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td>4X3</td>
+          <td>12</td>
+          <td>95%</td>
+          <td>3.01 s</td>
+          <td style="display:none">3X4</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td>9X5</td>
+          <td>45</td>
+          <td>75%</td>
+          <td>7.54 s</td>
+          <td style="display:none">5X9</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td>4X4</td>
+          <td>36</td>
+          <td>78%</td>
+          <td>7.24 s</td>
+          <td style="display:none">4X4</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td>1X3</td>
+          <td>40</td>
+          <td>80%</td>
+          <td>5.54 s</td>
+          <td style="display:none">3X1</td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td>2X6</td>
+          <td>12</td>
+          <td>95%</td>
+          <td>3.01 s</td>
+          <td style="display:none">6X2</td>
+        </tr>
+    </tbody>
+  </table>
+    -->
+  
+  <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
+    
+  </div> <!-- data-role="main" -->
+  
+</div> <!-- data-role="page" id="PAGE_STATS" -->
+
+
+</body>
+</html>
