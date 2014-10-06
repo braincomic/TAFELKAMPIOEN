@@ -24,8 +24,8 @@
 
 TO USE WITH CLICK INSTEAD OF TOUCHSTART,
 FOR EXAMPLE ON A COMPUTER,
-REPLACE "touchstart" WITH "touchstart click"
-for example, $("#testStartButtonAll").on("touchstart click",function(e){
+REPLACE "touchstart click" WITH "touchstart"
+for example, $("#testStartButtonAll").on("touchstart",function(e){
 
 
 
@@ -126,7 +126,7 @@ TO_DO
 /* general - background image*/
 
 body {
-	background-image: url('img/congruent_outline.png');
+	background-image: url('img/dark_wood2.png');
 	background-repeat: repeat;
 }
 .ui-page {
@@ -189,8 +189,8 @@ border-bottom: 1px solid #d6d6d6;
 /* test start */
 
 .testStartButtonDigit, .testStartButtonAll, .testStartButtonStart{
-	background-color: lightgray;
-	border: 1px solid white;
+	background-color: gray;
+	border: 1px solid black;
 	height: 80px; /* same as testStartButtonStart and same as line-height */
 	line-height: 80px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
 	font-weight: bold;
@@ -199,18 +199,19 @@ border-bottom: 1px solid #d6d6d6;
 }
 
 .testStartButtonDigitlikeSelected {
-	background-color: lightyellow;
+	background-color: yellow;
 	border: 1px solid black;
+	color: #555555;
 }
 
 #testStartButtonAll.testStartButtonDigitlikeSelected {
-	background-color: #FFCC66;
-	border: 1px solid black;
+	background-color: DarkOrange ;
+	border: 1px solid black; /* same as testStartButtonDigitlikeSelected */
 }
 
 #testStartButtonStart {
-  background: #AAFF88; /* #66CC66 darker green */
-	border: 1px solid white;
+  background: green; 
+	border: 1px solid black; /* same as testStartButtonDigitlikeSelected */
 	height: 80px; /* same as testStartButtonDigit and same as line-height */
 	line-height: 80px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
 	font-weight: bold;
@@ -222,8 +223,8 @@ border-bottom: 1px solid #d6d6d6;
 /* test perform */
 
 div.testPerformButtonDigitlike{
-	background-color: lightgray;
-	border: 1px solid white;
+	background-color: gray;
+	border: 1px solid black;
 	height: 100px;
 	line-height: 100px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
 	font-weight: bold;
@@ -253,6 +254,9 @@ div.testPerformButtonDigitlike{
 
 .redClass{
 	color: red;
+}
+.noLineBreakClass{
+	white-space: nowrap;
 }
 
 
@@ -397,7 +401,7 @@ var missions = [
 	];
 
 
-speedPerQuestion = [2, 2.5, 5, 10];
+speedPerQuestion = [2.5, 3.5, 5, 10];
 // 0 - 2.0 is supersnel
 // 1 - 2.5 is erg snel
 // 2 - 5.0 is te doen
@@ -650,7 +654,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
  	
   // When you select a digit, then highlight it.
   // Unhighlight or hightlight the ALL button depending on how many tables are chosen
-  $("div.testStartButtonDigit").on("touchstart click",function(e){
+  $("div.testStartButtonDigit").on("touchstart",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    $(this).toggleClass("testStartButtonDigitlikeSelected");
@@ -673,7 +677,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
   
   // when you select the ALL button, then highlight it and highlight all digit buttons
   // UNLESS all digits were already selected. In this case, unselect them all
-  $("#testStartButtonAll").on("touchstart click",function(e){
+  $("#testStartButtonAll").on("touchstart",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    var nrDigitsSelectedBefore = $("div.testStartButtonDigitlikeSelected.testStartButtonDigit").length;
@@ -700,7 +704,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
   
   // when you tap START, then...
   
-  $("#testStartButtonStart").on("touchstart click",function(e){
+  $("#testStartButtonStart").on("touchstart",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    // check what is selected
@@ -735,9 +739,23 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
 	  		timeStartTest     = new Date().getTime() + 1000;
 	  		timeStartQuestion = new Date().getTime() + 1000;
 	    	
+		    // clean up before starting
+		    
+		    // reset the selection for next time we would like
+		    // to start a test
+		    $(".testStartButtonDigit").removeClass("testStartButtonDigitlikeSelected");
+		    // empty some text related to results, stats and mission
+		    $("#resultScoreLine").text("");
+		    $("#missionTableText").text("");
+		    $("#missionTimeText").text("");
+		    $('#resultTableBody').html("");
+		    $('#statsTableBody').html(""); 
+		  
 		    // go to the following page
 		    $.mobile.changePage('#PAGE_TEST_PERFORM');
 		  }
+		  
+		  
 	   }
 	   else { // e.handled
 	   	return false;	
@@ -894,7 +912,7 @@ jQuery.fn.shake = function(intShakes, intDistance, intDuration) {
 $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
  
   
-  $(".testPerformButtonDigit").on("touchstart click",function(e){
+  $(".testPerformButtonDigit").on("touchstart",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 		  if (!inputIsBlocked){
@@ -953,45 +971,6 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 		  		intermediateAnswer = newAnswerAsInt;
 		  		displayPartialAnswerWrong();
 		  	
-		  	
-		  	
-		  	/*
-		  		console.log("case 3 - not correct");
-		  		quickUpdateToStats(false);
-					// block input
-					inputIsBlocked = true;
-					
-					// remove the question and partial answer
-					$("#testPerformQuestion").text("");
-					$("#testPerformEqual").text("");
-					$("#testPerformAnswer").text("");
-					// show solution
-					$("#testPerformWrong").text("FOUT, "+listOfQuestions[questionNr][0]+"x"+listOfQuestions[questionNr][1]+"="+listOfQuestions[questionNr][2]);
-					$("#testPerformWrong").show();
-					
-					// shake, and only continue after the shake
-					var shakingTime = 4000; // ms
-					$("#testPerformButtonPaneButtom").shake(40,50,shakingTime);
-					// only continue after shaking is finished
-					setTimeout(function(){
-						// remove the solution
-						$("#testPerformWrong").hide();
-						
-						// unblock input
-						inputIsBlocked = false;
-			  		questionNr++;
-			  		intermediateAnswer = 0;
-			  		if (questionNr<listOfQuestions.length) { // test not finished
-				  		displayNewQuestion();
-				  		displayPartialAnswer();
-				  		timeStartQuestion = new Date().getTime();
-				  	} else { // test is finished
-				  		testIsFinished();
-				  	}
-		    	}, shakingTime+300);
-		    */
-		    	
-		    	
 		  	}
 		  	
 		  	
@@ -1000,7 +979,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 		    mydiv = $(this);
 		    mydiv.css('background-color', '#FFFFF2');
 		    setTimeout(function(){
-		    	$("div.testPerformButtonDigitlike").css('background-color', '#cccccc');
+		    	$("div.testPerformButtonDigitlike").css('background-color', 'gray');
 		    }, 250); // same value as above for nice effect
 		  } // end if input is not blocked
   
@@ -1011,7 +990,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   });
 
   
-  $("#testPerformButtonBack").on("touchstart click",function(e){
+  $("#testPerformButtonBack").on("touchstart",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 		  	intermediateAnswer = 0;
@@ -1037,7 +1016,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
    	
 
    	<div class="ui-grid-solo" id="testPerformDisplayContainer">
-		    <div id="testPerformQuestionAnswer">
+		    <div id="testPerformQuestionAnswer" class="noLineBreakClass">
 		    	<span id="testPerformQuestion"></span>
 		    	<span id="testPerformEqual"   ></span>
 		    	<span id="testPerformAnswer"  ></span>
@@ -1127,11 +1106,11 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
 			r[++k] = '<td>';
 			r[++k] = ''+listOfQuestionsCopy[i][0]+'x'+listOfQuestionsCopy[i][1]+'='+listOfQuestionsCopy[i][2];
 			r[++k] = '</td>';
-			// correct or not
-			r[++k] = '<td>';
-			if (listOfQuestionsCopy[i][12]>0) r[++k] = 'OK';
-			else r[++k] = 'FOUT';
-			r[++k] = '</td>';
+			// // correct or not
+			// r[++k] = '<td>';
+			// if (listOfQuestionsCopy[i][12]>0) r[++k] = 'OK';
+			// else r[++k] = 'FOUT';
+			// r[++k] = '</td>';
 			// time needed
 			r[++k] = '<td>';
 			r[++k] = ''+listOfQuestionsCopy[i][10].toFixed(2)+'s';
@@ -1155,7 +1134,10 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
    <div data-role="main" class="ui-content">
    	
     <h2 id="resultScoreLine">Score:</h2> <!-- to be filled out dynamically -->
-    <h3 id="resultScoreLineMissieGeslaagd" >Missie geslaagd</h3>
+    <div id="resultScoreLineMissieGeslaagd">
+    	<h3>Missie geslaagd</h3>
+    	<a href="#PAGE_MISSION" data-transition="flow" class="ui-btn ui-icon-home ui-btn-icon-right">Volgende missie</a>
+    </div>
     <h3 id="resultScoreLineMissieGefaald" >Missie gefaald</h3>
     
     <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
@@ -1164,7 +1146,6 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
 			<thead id="resultTableHead">
 				<tr>
 					<th data-priority="persist">Tafel</th>
-					<th data-priority="2">Correct</th>
 					<th data-priority="3">Tijd</th>
 				</tr>
 			</thead>
@@ -1258,7 +1239,7 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
 
 
 $(document).on("pagecreate","#PAGE_MISSION",function(e){
-  $("#nextMission").on("touchstart click",function(){
+  $("#nextMission").on("touchstart",function(){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    selectedTablesForTest = [];
@@ -1362,10 +1343,10 @@ $(document).on("pagebeforeshow","#PAGE_STATS",function(){
 			r[++k] = '<td>';
 			r[++k] = ''+tableDataCopy[i][0]+'x'+tableDataCopy[i][1]+'='+tableDataCopy[i][2];
 			r[++k] = '</td>';
-			// perc correct
-			r[++k] = '<td>';
-			r[++k] = ''+tableDataCopy[i][13].toFixed(2)+'%';
-			r[++k] = '</td>';
+			// // perc correct
+			// r[++k] = '<td>';
+			// r[++k] = ''+tableDataCopy[i][13].toFixed(2)+'%';
+			// r[++k] = '</td>';
 			// avg time
 			r[++k] = '<td>';
 			r[++k] = ''+tableDataCopy[i][11].toFixed(2)+'s';
@@ -1388,6 +1369,9 @@ $(document).on("pagebeforeshow","#PAGE_STATS",function(){
 	}
 	// append to DOM
 	$('#statsTableBody').html(r.join('')); 
+	// and refresh to make responsive!
+	$('#statsTable').table( "refresh" );
+	
 });
 
 </script>
@@ -1400,12 +1384,11 @@ $(document).on("pagebeforeshow","#PAGE_STATS",function(){
     
     <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
     
-		<table data-role="table" data-mode="columntoggle" class="ui-responsive" id="statsTable">
+		<table data-role="table" class="ui-responsive" id="statsTable">
 			<thead id="statsTableHead">
 				<tr>
 					<th data-priority="persist">Tafel</th>
-					<th data-priority="2">Perc juist</th>
-					<th data-priority="3">Gemid. tijd</th>
+					<th data-priority="persist">Gemid. tijd</th>
 					<th data-priority="5">Tijd 50%</th>
 					<th data-priority="4">Tijd 75%</th>
 					<th data-priority="6">Tijd 90%</th>
