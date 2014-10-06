@@ -25,7 +25,7 @@
 TO USE WITH CLICK INSTEAD OF TOUCHSTART,
 FOR EXAMPLE ON A COMPUTER,
 REPLACE "touchstart" WITH "touchstart click"
-for example, $("#testStartButtonAll").on("touchstart",function(e){
+for example, $("#testStartButtonAll").on("touchstart click",function(e){
 
 
 
@@ -43,8 +43,11 @@ PAGE_HOME
 OVERVIEW IMAGES (always from public domain)
 
 img_test.png        634 x 640     http://pixabay.com/en/checkbox-check-mark-mark-check-303113/
+                                  http://pixabay.com/en/check-correct-mark-choice-yes-ok-37583/
 img_mission.png     640 x 640     http://pixabay.com/en/bull-s-eye-target-butt-object-aim-147729/
 img_stats.png       640 x 554     http://pixabay.com/en/flat-icon-bar-graphics-statistics-35773/
+img_pie.png                       http://www.meta-chart.com/pie
+img_pie_transparent.gif                       above + http://www171.lunapic.com/editor/
 
 favicon.ico and icon-full.png http://pixabay.com/en/multiply-x-cancel-abort-sign-303378/
 
@@ -56,6 +59,7 @@ OVERVIEW EXTERNAL LIBRARIES
 - Progress bar         http://workshop.rs/2012/12/animated-progress-bar-in-4-lines-of-jquery/
 - EaseOutBounds        http://easings.net
 - Shake                http://stackoverflow.com/questions/4399005/implementing-jquerys-shake-effect-with-animate
+- Background images    http://subtlepatterns.com/
 
 
 OVERVIEW LOCAL STORAGE
@@ -119,13 +123,28 @@ TO_DO
 
 <style type="text/css">
 
+/* general - background image*/
+
+body {
+	background-image: url('img/congruent_outline.png');
+	background-repeat: repeat;
+}
+.ui-page {
+    background: transparent;
+}
+.ui-content{
+    background: transparent;
+}
+
+
+/* general - no margins */
+
 .homeItem {
  margin: 0 !important;
 }
 
 #homeQuiz, #homeMission, #homeStats {
- display: none;
-	opacity : 1; /* old, was used to animate opacity*/
+	display: none;
 }
 
 .ui-block-a .ui-btn, .ui-block-b .ui-btn, .ui-block-c .ui-btn {
@@ -133,11 +152,28 @@ TO_DO
 }
 
 
+/* general - debug */
+
+#homeDebugPane, 
+#missionDebugPane {
+	display: none;
+}
+
+
+/* general -table borders */
+
+tr{
+border-bottom: 1px solid #d6d6d6;
+}
+
+
+/* mission */
+
 #missionProgressBar {
-        width: 100%;
-        height: 22px;
-        border: 1px solid #111;
-        background-color: #292929;
+	width: 100%;
+	height: 22px;
+	border: 1px solid #111;
+	background-color: #292929;
 }
  
 #missionProgressBar div {
@@ -149,62 +185,8 @@ TO_DO
         background-color: #0099ff; 
 }
 
-div.fullWidthAndBorder {
-    width: 100%;
-    border: 1px solid black;
-    display: inline-block;
-}
 
-div.testPerformButtonDigitlikeOld {
-    display: inline-block;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    width: calc(33.333% - 10px);
-    height: 100px;
-    margin: 5px;
-    background: #cccccc; /* light grey */
-    border: 1px solid #c2c2c2;
-    float: left;
-    
-    text-align: center;
-    vertical-align: middle;
-    line-height: 100px;       /* the same as your div height */
-    
-    cursor: pointer; cursor: hand; /* different browsers use different names */
-    
-    /* font */
-    font-size: 30px;
-}
-
-div.testPerformButtonDigitlike{
-	background-color: lightgray;
-	border: 1px solid white;
-	height: 100px;
-	line-height: 100px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
-	font-weight: bold;
-	text-align: center;
-	cursor: pointer; cursor: hand; /* different browsers use different names */
-}
-
-/* the display */
-#testPerformQuestionAnswer {
-    float: left;
-    width: calc(33.333% - 10px);
-    font-size: 40px;
-    
-    text-align: left;
-    vertical-align: middle;
-    line-height: 80px;
-}
-
-#testPerformCorrect {
-	color: #00AA00;
-	display: none;
-}
-#testPerformWrong {
-	color: red;
-	display: none;
-}
+/* test start */
 
 .testStartButtonDigit, .testStartButtonAll, .testStartButtonStart{
 	background-color: lightgray;
@@ -237,6 +219,45 @@ div.testPerformButtonDigitlike{
 }
 
 
+/* test perform */
+
+div.testPerformButtonDigitlike{
+	background-color: lightgray;
+	border: 1px solid white;
+	height: 100px;
+	line-height: 100px; /* same as height to center, see http://stackoverflow.com/questions/8865458/how-to-align-text-vertically-center-in-div-with-css */
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer; cursor: hand; /* different browsers use different names */
+}
+
+/* the display */
+#testPerformQuestionAnswer {
+    float: left;
+    width: calc(33.333% - 10px);
+    font-size: 40px;
+    
+    text-align: left;
+    vertical-align: middle;
+    line-height: 80px;
+}
+
+#testPerformCorrect {
+	color: #00AA00;
+	display: none;
+}
+#testPerformWrong {
+	color: red;
+	display: none;
+}
+
+.redClass{
+	color: red;
+}
+
+
+/* result */
+
 #resultScoreLineMissieGeslaagd {
     color: green;
     display: none;
@@ -246,18 +267,6 @@ div.testPerformButtonDigitlike{
     display: none;
 }
 
-#homeDebugPane, 
-#missionDebugPane {
-	display: none;
-}
-
-tr{
-border-bottom: 1px solid #d6d6d6;
-}
-
-.redClass{
-	color: red;
-}
 
 </style>
 
@@ -495,13 +504,7 @@ $(document).on("pagecreate","#PAGE_HOME",function(){
 
 
 
-
-//$(document).on("pageshow","#PAGE_HOME",function(){ // When entering pagetwo
-//  $("#homeQuiz").animate({opacity:'1'},250, function(){
-//  $("#homeMission").animate({opacity:'1'},250, function(){
-//  $("#homeStats").animate({opacity:'1'},250);
-//});
-//});   
+ 
  
 $(document).on("pageshow","#PAGE_HOME",function(){
 	
@@ -520,19 +523,15 @@ $(document).on("pageshow","#PAGE_HOME",function(){
 
 </script>
 
-<div data-role="page" id="PAGE_HOME">
+<div data-role="page" id="PAGE_HOME" data-theme="b">
 	
-  <div data-role="header">
-    <h1>Tafelkampioen</h1>
-  </div>
-
    <div data-role="main" class="ui-content">
    	
     <h2>Word tafelkampioen!</h2>
     <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
       <li id="homeQuiz">
         <a href="#PAGE_TEST_START" data-transition="slide">
-        <img src="img_test.png" alt="Quiz">
+        <img src="img_check-37583_640.png" alt="Quiz">
         <h2>Quiz</h2>
         <p>Oefen een bepaalde tafel.</p>
         </a>
@@ -550,7 +549,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
     <ul data-role="listview" data-inset="true" id="ulHomeStats" class="homeItem">
       <li id="homeStats">
         <a href="#PAGE_STATS" data-transition="turn">
-        <img src="img_stats.png" alt="Stats">
+        <img src="img_pie_transparent.gif" alt="Stats">
         <h2>Statistieken</h2>
         <p>Welke tafel kan je het beste?</p>
         </a>
@@ -651,7 +650,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
  	
   // When you select a digit, then highlight it.
   // Unhighlight or hightlight the ALL button depending on how many tables are chosen
-  $("div.testStartButtonDigit").on("touchstart",function(e){
+  $("div.testStartButtonDigit").on("touchstart click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    $(this).toggleClass("testStartButtonDigitlikeSelected");
@@ -674,7 +673,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
   
   // when you select the ALL button, then highlight it and highlight all digit buttons
   // UNLESS all digits were already selected. In this case, unselect them all
-  $("#testStartButtonAll").on("touchstart",function(e){
+  $("#testStartButtonAll").on("touchstart click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    var nrDigitsSelectedBefore = $("div.testStartButtonDigitlikeSelected.testStartButtonDigit").length;
@@ -701,7 +700,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
   
   // when you tap START, then...
   
-  $("#testStartButtonStart").on("touchstart",function(e){
+  $("#testStartButtonStart").on("touchstart click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    // check what is selected
@@ -753,12 +752,8 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
 
 </script>
 
-<div data-role="page" id="PAGE_TEST_START">
+<div data-role="page" id="PAGE_TEST_START" data-theme="b">
 	
-  <div data-role="header">
-    <h1>Tafelkampioen</h1>
-  </div>
-
    <div data-role="main" class="ui-content">
    	
    	<h1>Welke tafels wil je oefenen?</h1>
@@ -899,7 +894,7 @@ jQuery.fn.shake = function(intShakes, intDistance, intDuration) {
 $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
  
   
-  $(".testPerformButtonDigit").on("touchstart",function(e){
+  $(".testPerformButtonDigit").on("touchstart click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 		  if (!inputIsBlocked){
@@ -1016,7 +1011,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   });
 
   
-  $("#testPerformButtonBack").on("touchstart",function(e){
+  $("#testPerformButtonBack").on("touchstart click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 		  	intermediateAnswer = 0;
@@ -1036,12 +1031,8 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 </script>
 
 
-<div data-role="page" id="PAGE_TEST_PERFORM">
+<div data-role="page" id="PAGE_TEST_PERFORM" data-theme="b">
 	
-  <div data-role="header">
-    <h1>Tafelkampioen</h1>
-  </div>
-
    <div data-role="main" class="ui-content">
    	
 
@@ -1151,6 +1142,7 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
 	}
 	// append to DOM
 	$('#resultTableBody').html(r.join('')); 
+	$('#resultTable').table( "refresh" );
 
 
 });
@@ -1158,12 +1150,8 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
 </script>
 
 
-<div data-role="page" id="PAGE_TEST_RESULT">
+<div data-role="page" id="PAGE_TEST_RESULT" data-theme="b">
 	
-  <div data-role="header">
-    <h1>Tafelkampioen</h1>
-  </div>
-
    <div data-role="main" class="ui-content">
    	
     <h2 id="resultScoreLine">Score:</h2> <!-- to be filled out dynamically -->
@@ -1270,7 +1258,7 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
 
 
 $(document).on("pagecreate","#PAGE_MISSION",function(e){
-  $("#nextMission").on("touchstart",function(){
+  $("#nextMission").on("touchstart click",function(){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    selectedTablesForTest = [];
@@ -1303,12 +1291,8 @@ $(document).on("pagecreate","#PAGE_MISSION",function(e){
 
 
 
-<div data-role="page" id="PAGE_MISSION">
+<div data-role="page" id="PAGE_MISSION" data-theme="b">
 	
-  <div data-role="header">
-    <h1>Tafelkampioen</h1>
-  </div>
-
    <div data-role="main" class="ui-content">
    	
     <div id="missionProgressBar"><div></div></div>
@@ -1320,7 +1304,6 @@ $(document).on("pagecreate","#PAGE_MISSION",function(e){
         <a href="#">
         <img src="img_mission.png" id="nextMissionPicture" alt="Volgende missie">
         <p>Los de <span id="missionTableText"></span> op</p>
-        <p>zonder fouten</p>
         <p>in <span id="missionTimeText"></span> seconden!</p>
         </a>
       </li>
@@ -1351,7 +1334,7 @@ Array.prototype.clone = function() {
     return arr;
 }
 	
-$(document).on("pageshow","#PAGE_STATS",function(){ // When entering pagetwo
+$(document).on("pagebeforeshow","#PAGE_STATS",function(){ 
 	// make sure tableData is up to date with local storage
 	getFromLocalStorage();
 	
@@ -1409,11 +1392,7 @@ $(document).on("pageshow","#PAGE_STATS",function(){ // When entering pagetwo
 
 </script>
 
-<div data-role="page" id="PAGE_STATS">
-	
-  <div data-role="header">
-    <h1>Tafelkampioen</h1>
-  </div>
+<div data-role="page" id="PAGE_STATS" data-theme="b">
 
    <div data-role="main" class="ui-content">
    	
@@ -1421,7 +1400,7 @@ $(document).on("pageshow","#PAGE_STATS",function(){ // When entering pagetwo
     
     <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
     
-		<table data-role="table" class="ui-responsive" id="statsTable">
+		<table data-role="table" data-mode="columntoggle" class="ui-responsive" id="statsTable">
 			<thead id="statsTableHead">
 				<tr>
 					<th data-priority="persist">Tafel</th>
