@@ -997,6 +997,9 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 				$("#testPerformQuestion").removeClass("redClass");
 				$("#testPerformEqual").removeClass("redClass");
 				$("#testPerformAnswer").removeClass("redClass");
+				// Time penalty! As if the question was asked one second earlier and the quiz started one second earlier.
+				timeStartTest     -= 1000 ; // 1 second extra
+				timeStartQuestion -= 1000 ; // 1 second extra
 		  	displayPartialAnswer();
 	   }
 	   else { // e.handled
@@ -1265,6 +1268,9 @@ $(document).on("pagecreate","#PAGE_MISSION",function(e){
 	   else { // e.handled
 	   	return false;	
 	   }
+  });
+  $("#missionProgressBar").on("touchstart",function(){
+  	$.mobile.changePage('#PAGE_CONFIG');
   });
  });
   
@@ -1548,6 +1554,49 @@ $(document).on("pagebeforeshow","#PAGE_STATS",function(){
   </div> <!-- data-role="main" -->
   
 </div> <!-- data-role="page" id="PAGE_STATS" -->
+
+
+<!-- ###############################################################  -->
+<!-- p########################  PAGE_CONFIG  ########################  -->
+<!-- ###############################################################  -->
+
+<script>
+
+$(document).on("pagecreate","#PAGE_CONFIG",function(){
+ 	
+ 	// set the slider to value missionNr
+ 	$("#missionSlider").val( missionNr );
+ 	$("#missionSlider").slider( "refresh" );
+ 	
+ 	// when the save mission button is clicked, save the mission
+  $("#saveMissionNr").on("touchstart",function(e){
+  	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
+  	if(e.handled !== true) {
+  		missionNr = $("#missionSlider").val();
+  		saveToLocalStorage();
+  	}
+  });
+});
+
+</script>
+
+<div data-role="page" id="PAGE_CONFIG" data-theme="b">
+
+  <div data-role="header">
+  	<h1>Settings</h1>
+  </div>
+
+  <div data-role="main" class="ui-content">
+    <form method="post" action="demoform.asp">
+      <label for="points">Verander missie:</label>
+      <input type="range" name="points" id="missionSlider" value="0" min="0" max="74" data-show-value="true">
+      <a href="#" class="ui-btn ui-icon-home ui-btn-icon-right" id="saveMissionNr">Bewaar</a>
+      <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
+    </form>
+  </div>
+  
+  
+</div> <!-- data-role="page" id="PAGE_CONFIG" -->
 
 
 </body>
