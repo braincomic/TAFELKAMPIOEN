@@ -186,6 +186,14 @@ border-bottom: 1px solid #d6d6d6;
 }
 
 
+/* home page */
+
+h1#mainTitle {
+	font-family: times, Times New Roman, times-roman, georgia, serif;
+	font-variant: small-caps;
+}
+
+
 /* test start */
 
 .testStartButtonDigit, .testStartButtonAll, .testStartButtonStart{
@@ -531,7 +539,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
 	
    <div data-role="main" class="ui-content">
    	
-    <h2>Word tafelkampioen!</h2>
+    <h1 id="mainTitle">Word Tafelkampioen!</h1>
     <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
       <li id="homeQuiz">
         <a href="#PAGE_TEST_START" data-transition="slide">
