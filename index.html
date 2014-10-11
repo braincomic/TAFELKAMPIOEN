@@ -188,7 +188,7 @@ border-bottom: 1px solid #d6d6d6;
 
 /* home page */
 
-h1#mainTitle {
+h1 {
 	font-family: times, Times New Roman, times-roman, georgia, serif;
 	font-variant: small-caps;
 }
@@ -539,7 +539,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
 	
    <div data-role="main" class="ui-content">
    	
-    <h1 id="mainTitle">Word Tafelkampioen!</h1>
+    <h1 id="titleHome	">Word Tafelkampioen!</h1>
     <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
       <li id="homeQuiz">
         <a href="#PAGE_TEST_START" data-transition="slide">
@@ -782,7 +782,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
 	
    <div data-role="main" class="ui-content">
    	
-   	<h1>Welke tafels wil je oefenen?</h1>
+   	<h1 id="titleTestStart">Welke tafels wil je oefenen?</h1>
    	
    	<div class="ui-grid-b" >
         <div class="ui-block-a testStartButtonDigit" id="testStartButton1" >1</div>
@@ -1394,7 +1394,7 @@ $(document).on("pagebeforeshow","#PAGE_STATS",function(){
 
    <div data-role="main" class="ui-content">
    	
-    <h2>Statistieken</h2>
+    <h1>Statistieken</h1>
     
     <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
     
