@@ -50,6 +50,7 @@ img_mission.png     640 x 640     http://pixabay.com/en/bull-s-eye-target-butt-o
 img_stats.png       640 x 554     http://pixabay.com/en/flat-icon-bar-graphics-statistics-35773/
 img_pie.png                       http://www.meta-chart.com/pie
 img_pie_transparent.gif                       above + http://www171.lunapic.com/editor/
+img_tromphee.gif                      http://pixabay.com/en/gold-trophy-win-winner-first-268640/
 
 favicon.ico and icon-full.png http://pixabay.com/en/multiply-x-cancel-abort-sign-303378/
 
@@ -274,7 +275,7 @@ div.testPerformButtonDigitlike{
 /* result */
 
 #resultScoreLineMissieGeslaagd {
-    color: lightgreen;
+    color: #00FF00;
     display: none;
 }
 #resultScoreLineMissieGefaald {
@@ -287,6 +288,11 @@ div.testPerformButtonDigitlike{
 
 /* Bar chart */
 
+#statisticsChartMultiplications {
+ margin: 0px; 
+ padding: 0px; 
+}
+ 
 .chart-horiz .chart { width: 90% }
  
 .chart-horiz .chart li {
@@ -315,9 +321,13 @@ div.testPerformButtonDigitlike{
 .chart-horiz .chart li .bar {
   background: #27ae60;
   height: 100%;
-  min-width: 164px
+  min-width: 80px;
 }
- 
+
+li.past { /*move a bit to the left, because we have room and because the label on the right is not always visible when 100% */
+  left: -40px;
+}
+
 .chart-horiz .chart li .chartLabel {
   color: #27ae60;
   font-size: 18px;
@@ -579,6 +589,79 @@ function calculateColor(score) {
 	return 'rgb('+red+','+green+',0)'; // blue is 0
 }
 
+
+// set the text on the next mission
+//
+//    <h1 id="nextMissionPageTitle">Volgende missie:</h1>
+//    
+//    <ul data-role="listview" data-inset="true" id="nextMission">
+//      <li>
+//        <a href="#">
+//        <img src="img_mission.png" id="nextMissionPicture" alt="Volgende missie">
+//        <p id="nextMissionPar1">Los de <span id="missionTableText"></span> op</p>
+//        <p id="nextMissionPar2">in <span id="missionTimeText"></span> seconden!</p>
+//        </a>
+//      </li>
+//    </ul>
+//
+function setNextMissionText() {
+	// because we're usually quite late...
+	
+	// IF WE ARE FINISHED WITH ALL QUIZES
+	if (missionNr >= missions.length) {
+		$("#nextMissionPicture").attr('src', 'img_tromphee.gif');
+		$("#nextMissionPageTitle").text('Gewonnen');
+		$("#nextMissionPar1").html('<b>Proficiat</b>');
+		$("#nextMissionPar2").html('Je bent <b>TAFELKAMPIOEN</b>!');
+	}
+	else { // not all missions finished
+		
+		// SET LIST OF MULTIPLICATION TABLES
+		var textTables = "" ; 
+		if (missions[missionNr][0].length == 1) {
+			textTables = "tafel van "+missions[missionNr][0][0];
+		}
+		else {
+			textTables = "tafels van "+missions[missionNr][0][0];
+			for (i = 1; i<missions[missionNr][0].length-1; i++) {
+				textTables += ", ";
+				textTables += missions[missionNr][0][i];
+			}
+			textTables += " en ";
+			textTables += missions[missionNr][0][missions[missionNr][0].length-1];
+		}
+		console.log("missionTableText="+missionTableText);
+		$("#missionTableText").text(textTables);
+		
+		
+		// CALCULATE AND DISPLAY TIME
+		// aantal vragen
+		var nTables = missions[missionNr][0].length;
+		var nQuestions = nrQuestionsPerNTafel[nTables-1];
+		$("#missionDebugPane").append("nTables="+nTables+"<br>");
+		$("#missionDebugPane").append("nQuestions="+nQuestions+"<br>");
+		console.log("there will be "+nQuestions+" question");
+		// calculate average of the times per question
+		var sumTimePerQuestion = 0;
+		for (i = 0; i<missions[missionNr][1].length; i++) {
+			sumTimePerQuestion += speedPerQuestion[missions[missionNr][1][i]];
+		};
+		$("#missionDebugPane").append("sumTimePerQuestion="+sumTimePerQuestion+"<br>");
+		var avgTimePerQuestion = sumTimePerQuestion/(0.+missions[missionNr][1].length);
+		$("#missionDebugPane").append("avgTimePerQuestion="+avgTimePerQuestion+"<br>");
+		missionTimeAllowed = Math.ceil(avgTimePerQuestion*nQuestions);
+		$("#missionDebugPane").append("missionTimeAllowed="+missionTimeAllowed+"<br>");
+		console.log("nTables="+nTables);
+		console.log("nQuestions="+nQuestions);
+		console.log("sumTimePerQuestion="+sumTimePerQuestion);
+		console.log("avgTimePerQuestion="+avgTimePerQuestion);
+		console.log("missionTimeAllowed="+missionTimeAllowed);
+		$("#missionTimeText").text(missionTimeAllowed);
+		
+	}
+}
+
+
 // When home page is loaded, initialize local storage is not yet done.
 // And retrieve local storage values.
 $(document).on("pagecreate","#PAGE_HOME",function(){
@@ -607,7 +690,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
 	});
 		    }, 1000);
 		    
-	
+	setNextMissionText(); // to see this immediately when you click on mission
 
 });
   	
@@ -618,7 +701,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
 	
    <div data-role="main" class="ui-content">
    	
-    <h1 id="titleHome	">Word Tafelkampioen!</h1>
+    <h1 id="titleHome">Word Tafelkampioen!</h1>
     <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
       <li id="homeQuiz">
         <a href="#PAGE_TEST_START" data-transition="slide">
@@ -847,8 +930,6 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
 		    $(".testStartButtonDigit").removeClass("testStartButtonDigitlikeSelected");
 		    // empty some text related to results, stats and mission
 		    $("#resultScoreLine").text("");
-		    $("#missionTableText").text("");
-		    $("#missionTimeText").text("");
 		    $('#resultBarChart').html("");
 		    $('#statsTableBody').html(""); 
 		  
@@ -1063,6 +1144,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
 			  		displayPartialAnswer();
 			  		timeStartQuestion = new Date().getTime();
 			  		// GUI
+			  		$("#testPerformCorrect").text('= '+correctAnswerAsInt+' JUIST');
 			  		$("#testPerformCorrect").show();
 			  		//testPerformButtonCorrectAnswerGiven
 			  		var colr = $(".testPerformButtonDigitlike").css("background-color");
@@ -1195,6 +1277,9 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
 			saveToLocalStorage();
 			$("#resultScoreLineMissieGeslaagd").show();
 			$("#resultScoreLineMissieGefaald") .hide();
+			// already set mission texts correct,
+			// even though they are not visible right now
+			setNextMissionText();
 		}
 		else {
 			// mission failed
@@ -1221,16 +1306,16 @@ $(document).on("pageshow","#PAGE_TEST_RESULT",function(){
 		if (listOfQuestionsCopy[i][3] > 0) {
 			
 			// tafel
-			currentMultiplication = ''+listOfQuestionsCopy[i][0]+'x'+listOfQuestionsCopy[i][1];
+			currentMultiplication = ''+listOfQuestionsCopy[i][0]+'x'+listOfQuestionsCopy[i][1]+'='+listOfQuestionsCopy[i][2];
 			
-			// value time 75%
-			currentTimeValue = parseInt( 1000*listOfQuestionsCopy[i][7] , 10 ); // unit: ms
+			// value time last try
+			currentTimeValue = parseInt( 1000*listOfQuestionsCopy[i][10] , 10 ); // unit: ms
 			
-			// print time 75%
-			if (listOfQuestionsCopy[i][7]>9.99) {
+			// print time last try
+			if (listOfQuestionsCopy[i][10]>9.99) {
 				currentTimePrint = "&ge;10s";
 			} else {
-				currentTimePrint = ''+listOfQuestionsCopy[i][7].toFixed(2)+'s';
+				currentTimePrint = ''+listOfQuestionsCopy[i][10].toFixed(2)+'s';
 			}
 			
 			// make the color
@@ -1321,51 +1406,9 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
 	myPerc = parseInt(myPerc);
 	progress(myPerc, $('#missionProgressBar'));
 	
-	// DISPLAY MISSION TEXT
-	// "tafel van 7"
-	// "tafels van 8 en 9"
-	// "tafels van 3, 5 en 9"
-	var textTables = "" ; 
-	if (missions[missionNr][0].length == 1) {
-		textTables = "tafel van "+missions[missionNr][0][0];
-	}
-	else {
-		textTables = "tafels van "+missions[missionNr][0][0];
-		for (i = 1; i<missions[missionNr][0].length-1; i++) {
-			textTables += ", ";
-			textTables += missions[missionNr][0][i];
-		}
-		textTables += " en ";
-		textTables += missions[missionNr][0][missions[missionNr][0].length-1];
-	}
-	console.log("missionTableText="+missionTableText);
-	$("#missionTableText").text(textTables);
+	// set mission text
+	setNextMissionText();
 	
-	// CALCULATE AND DISPLAY TIME
-	// aantal vragen
-	var nTables = missions[missionNr][0].length;
-	var nQuestions = nrQuestionsPerNTafel[nTables-1];
-	$("#missionDebugPane").append("nTables="+nTables+"<br>");
-	$("#missionDebugPane").append("nQuestions="+nQuestions+"<br>");
-	console.log("there will be "+nQuestions+" question");
-	// calculate average of the times per question
-	var sumTimePerQuestion = 0;
-	for (i = 0; i<missions[missionNr][1].length; i++) {
-		sumTimePerQuestion += speedPerQuestion[missions[missionNr][1][i]];
-	};
-	$("#missionDebugPane").append("sumTimePerQuestion="+sumTimePerQuestion+"<br>");
-	var avgTimePerQuestion = sumTimePerQuestion/(0.+missions[missionNr][1].length);
-	$("#missionDebugPane").append("avgTimePerQuestion="+avgTimePerQuestion+"<br>");
-	missionTimeAllowed = Math.ceil(avgTimePerQuestion*nQuestions);
-	$("#missionDebugPane").append("missionTimeAllowed="+missionTimeAllowed+"<br>");
-	console.log("nTables="+nTables);
-	console.log("nQuestions="+nQuestions);
-	console.log("sumTimePerQuestion="+sumTimePerQuestion);
-	console.log("avgTimePerQuestion="+avgTimePerQuestion);
-	console.log("missionTimeAllowed="+missionTimeAllowed);
-	$("#missionTimeText").text(missionTimeAllowed);
-	//$('#nextMissionPicture').animate({ width: progressBarWidth }, 500).html(percent + "%&nbsp;");
-	        $("#nextMissionPicture").animate({width: "400px", height: "400px" });
 });
 
 
@@ -1416,14 +1459,14 @@ $(document).on("pagecreate","#PAGE_MISSION",function(e){
    	
     <div id="missionProgressBar"><div></div></div>
     
-    <h1>Volgende missie:</h1>
+    <h1 id="nextMissionPageTitle">Volgende missie:</h1>
     
     <ul data-role="listview" data-inset="true" id="nextMission">
       <li>
         <a href="#">
         <img src="img_mission.png" id="nextMissionPicture" alt="Volgende missie">
-        <p>Los de <span id="missionTableText"></span> op</p>
-        <p>in <span id="missionTimeText"></span> seconden!</p>
+        <p id="nextMissionPar1">Los de <span id="missionTableText"></span> op</p>
+        <p id="nextMissionPar2">in <span id="missionTimeText"></span> seconden!</p>
         </a>
       </li>
     </ul>
@@ -1485,7 +1528,7 @@ $(document).on("pagebeforeshow","#PAGE_STATISTICS",function(){
 			time75  = tableData[i][7];
 			tableCountOccurences[number1] += 1 ;
 			tableCountOccurences[number2] += 1 ;
-			tableCountSumTime75 [number1] += time75 ;
+			tableCountSumTime75 [number1] += time75 ;
 			tableCountSumTime75 [number2] += time75 ;
 		}
 	}
@@ -1562,7 +1605,7 @@ $(document).on("pagebeforeshow","#PAGE_STATISTICS",function(){
 		if (tableDataCopy[i][3] > 0) {
 			
 			// tafel
-			currentMultiplication = ''+tableDataCopy[i][0]+'x'+tableDataCopy[i][1];
+			currentMultiplication = ''+tableDataCopy[i][0]+'x'+tableDataCopy[i][1]+'='+tableDataCopy[i][2];
 			
 			// value time 75%
 			currentTimeValue = parseInt( 1000*tableDataCopy[i][7] , 10 ); // unit: ms
@@ -1884,6 +1927,8 @@ $(document).on("pagecreate","#PAGE_CONFIG",function(){
   	if(e.handled !== true) {
   		missionNr = $("#missionSlider").val();
   		saveToLocalStorage();
+  		setNextMissionText(); // not needed
+  		$.mobile.changePage('#PAGE_MISSION');
   	}
   });
 });
@@ -1898,8 +1943,8 @@ $(document).on("pagecreate","#PAGE_CONFIG",function(){
 
   <div data-role="main" class="ui-content">
     <form method="post" action="demoform.asp">
-      <label for="points">Verander missie:</label>
-      <input type="range" name="points" id="missionSlider" value="0" min="0" max="74" data-show-value="true">
+      <label for="missionSlider">Verander missie:</label>
+      <input type="range" name="missionSlider" id="missionSlider" value="0" min="0" max="74" data-show-value="true">
       <a href="#" class="ui-btn ui-icon-home ui-btn-icon-right" id="saveMissionNr">Bewaar</a>
       <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
     </form>
