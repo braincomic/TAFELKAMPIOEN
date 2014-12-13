@@ -24,8 +24,8 @@
 
 TO USE WITH CLICK INSTEAD OF TOUCHSTART,
 FOR EXAMPLE ON A COMPUTER,
-REPLACE "touchstart click" WITH "touchstart"
-for example, $("#testStartButtonAll").on("touchstart",function(e){
+REPLACE "touchstart click" WITH "click"
+for example, $("#testStartButtonAll").on("click",function(e){
 
 
 
@@ -321,11 +321,11 @@ div.testPerformButtonDigitlike{
 .chart-horiz .chart li .bar {
   background: #27ae60;
   height: 100%;
-  min-width: 80px;
+  min-width: 164px;
 }
 
 li.past { /*move a bit to the left, because we have room and because the label on the right is not always visible when 100% */
-  left: -41px;
+  left: -40px;
 }
 
 .chart-horiz .chart li .chartLabel {
@@ -356,7 +356,7 @@ var lengthLocalStorageTableData = 16;
 
 // from local storage
 var tableData;
-//var tableIndex;
+var tableIndex;
 var missionNr;
 
 var listOfQuestions;
@@ -479,7 +479,7 @@ speedPerQuestion = [2.5, 3.5, 5, 10];
 // Save the data table to local storage
 function saveToLocalStorage() {
 	localStorage.setItem("localStorageTableData",   JSON.stringify(tableData));
-	//localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex)); // not needed, because doesn't change
+	localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex)); // not needed, because doesn't change
 	localStorage.setItem("localStorageMissionNumber", missionNr);
 }
 
@@ -489,10 +489,10 @@ function getFromLocalStorage() {
 	if (storedData) {
 		tableData = JSON.parse(storedData);
 	}
-	//var storedIndex = localStorage.getItem("localStorageTableIndex");
-	//if (storedIndex) {
-	//	tableIndex = JSON.parse(storedIndex);
-	//}
+	var storedIndex = localStorage.getItem("localStorageTableIndex");
+	if (storedIndex) {
+		tableIndex = JSON.parse(storedIndex);
+	}
 	missionNr = localStorage.getItem("localStorageMissionNumber");
 }
 
@@ -523,7 +523,7 @@ function initializeLocalStorage() {
 	console.log("creating local storage");
 	// create "structure"
 	tableData = new Array();
-	//tableIndex = new Array();
+	tableIndex = new Array();
 	var counter = 0;
 	for (var d1 = 0; d1 <= 10; d1++) {
 		for (var d2 = d1; d2 <= 10; d2++) {
@@ -546,13 +546,13 @@ function initializeLocalStorage() {
 			tableData[counter][14] = 0;        // [i][14] CALC: not used     0    
 			tableData[counter][15] = 0;        // [i][15] CALC: not used     0    
 			// create index to make retrieving index easily
-			//tableIndex[11*d1+d2] = counter;
-			//tableIndex[11*d2+d1] = counter;
+			tableIndex[11*d1+d2] = counter;
+			tableIndex[11*d2+d1] = counter;
 			counter++;
 		}
 	}
 	localStorage.setItem("localStorageTableData",   JSON.stringify(tableData));
-	//localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex));
+	localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex));
 	// mission nr
 	missionNr = 0 ;
 	localStorage.setItem("localStorageMissionNumber", missionNr);
@@ -690,7 +690,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
 	});
 		    }, 1000);
 		    
-	setNextMissionText(); // to see this immediately when you click on mission
+	
 
 });
   	
@@ -701,7 +701,7 @@ $(document).on("pageshow","#PAGE_HOME",function(){
 	
    <div data-role="main" class="ui-content">
    	
-    <h1 id="titleHome">Word Tafelkampioen!</h1>
+    <h1 id="titleHome	">Word Tafelkampioen!</h1>
     <ul data-role="listview" data-inset="true" id="ulHomeQuiz" class="homeItem">
       <li id="homeQuiz">
         <a href="#PAGE_TEST_START" data-transition="slide">
@@ -838,7 +838,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
  	
   // When you select a digit, then highlight it.
   // Unhighlight or hightlight the ALL button depending on how many tables are chosen
-  $("div.testStartButtonDigit").on("touchstart",function(e){
+  $("div.testStartButtonDigit").on("click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    $(this).toggleClass("testStartButtonDigitlikeSelected");
@@ -861,7 +861,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
   
   // when you select the ALL button, then highlight it and highlight all digit buttons
   // UNLESS all digits were already selected. In this case, unselect them all
-  $("#testStartButtonAll").on("touchstart",function(e){
+  $("#testStartButtonAll").on("click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    var nrDigitsSelectedBefore = $("div.testStartButtonDigitlikeSelected.testStartButtonDigit").length;
@@ -888,7 +888,7 @@ $(document).on("pagecreate","#PAGE_TEST_START",function(){
   
   // when you tap START, then...
   
-  $("#testStartButtonStart").on("touchstart",function(e){
+  $("#testStartButtonStart").on("click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    // check what is selected
@@ -1105,10 +1105,9 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
  	var fontSizeCell   = parseInt( idealHeighCell * 4/10 , 10 );
  	console.log("performTest windowHeight = "+windowHeight+" , so resize the cell height to "+idealHeighCell+' with font size '+ fontSizeCell );
  	$('.testPerformButtonDigitlike').css({'height': idealHeighCell, 'line-height': ''+idealHeighCell+'px', 'font-size': ''+fontSizeCell+'px'});
- 	$('.testPerformQuestionAnswer').css({'height': idealHeighCell, 'line-height': ''+idealHeighCell+'px', 'font-size': ''+fontSizeCell+'px'});
  	
  	  
-  $(".testPerformButtonDigit").on("touchstart",function(e){
+  $(".testPerformButtonDigit").on("click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 		  if (!inputIsBlocked){
@@ -1187,7 +1186,7 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
   });
 
   
-  $("#testPerformButtonBack").on("touchstart",function(e){
+  $("#testPerformButtonBack").on("click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 		  	intermediateAnswer = 0;
@@ -1418,7 +1417,7 @@ $(document).on("pageshow","#PAGE_MISSION",function(){
 
 
 $(document).on("pagecreate","#PAGE_MISSION",function(e){
-  $("#nextMission").on("touchstart",function(){
+  $("#nextMission").on("click",function(){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
 	    selectedTablesForTest = [];
@@ -1445,7 +1444,7 @@ $(document).on("pagecreate","#PAGE_MISSION",function(e){
 	   	return false;	
 	   }
   });
-  $("#missionProgressBar").on("touchstart",function(){
+  $("#missionProgressBar").on("click",function(){
   	$.mobile.changePage('#PAGE_CONFIG');
   });
  });
@@ -1923,13 +1922,12 @@ $(document).on("pagecreate","#PAGE_CONFIG",function(){
  	$("#missionSlider").slider( "refresh" );
  	
  	// when the save mission button is clicked, save the mission
-  $("#saveMissionNr").on("touchstart",function(e){
+  $("#saveMissionNr").on("click",function(e){
   	e.stopPropagation(); e.preventDefault(); // http://stackoverflow.com/questions/7018919/how-to-bind-touchstart-and-click-events-but-not-respond-to-both
   	if(e.handled !== true) {
   		missionNr = $("#missionSlider").val();
   		saveToLocalStorage();
   		setNextMissionText(); // not needed
-  		$.mobile.changePage('#PAGE_MISSION');
   	}
   });
 });
@@ -1944,8 +1942,8 @@ $(document).on("pagecreate","#PAGE_CONFIG",function(){
 
   <div data-role="main" class="ui-content">
     <form method="post" action="demoform.asp">
-      <label for="missionSlider">Verander missie:</label>
-      <input type="range" name="missionSlider" id="missionSlider" value="0" min="0" max="74" data-show-value="true">
+      <label for="points">Verander missie:</label>
+      <input type="range" name="points" id="missionSlider" value="0" min="0" max="74" data-show-value="true">
       <a href="#" class="ui-btn ui-icon-home ui-btn-icon-right" id="saveMissionNr">Bewaar</a>
       <a href="#PAGE_HOME" class="ui-btn ui-icon-home ui-btn-icon-right">Terug naar beginpagina</a>
     </form>

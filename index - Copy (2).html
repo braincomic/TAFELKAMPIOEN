@@ -356,7 +356,7 @@ var lengthLocalStorageTableData = 16;
 
 // from local storage
 var tableData;
-//var tableIndex;
+var tableIndex;
 var missionNr;
 
 var listOfQuestions;
@@ -479,7 +479,7 @@ speedPerQuestion = [2.5, 3.5, 5, 10];
 // Save the data table to local storage
 function saveToLocalStorage() {
 	localStorage.setItem("localStorageTableData",   JSON.stringify(tableData));
-	//localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex)); // not needed, because doesn't change
+	localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex)); // not needed, because doesn't change
 	localStorage.setItem("localStorageMissionNumber", missionNr);
 }
 
@@ -489,10 +489,10 @@ function getFromLocalStorage() {
 	if (storedData) {
 		tableData = JSON.parse(storedData);
 	}
-	//var storedIndex = localStorage.getItem("localStorageTableIndex");
-	//if (storedIndex) {
-	//	tableIndex = JSON.parse(storedIndex);
-	//}
+	var storedIndex = localStorage.getItem("localStorageTableIndex");
+	if (storedIndex) {
+		tableIndex = JSON.parse(storedIndex);
+	}
 	missionNr = localStorage.getItem("localStorageMissionNumber");
 }
 
@@ -523,7 +523,7 @@ function initializeLocalStorage() {
 	console.log("creating local storage");
 	// create "structure"
 	tableData = new Array();
-	//tableIndex = new Array();
+	tableIndex = new Array();
 	var counter = 0;
 	for (var d1 = 0; d1 <= 10; d1++) {
 		for (var d2 = d1; d2 <= 10; d2++) {
@@ -546,13 +546,13 @@ function initializeLocalStorage() {
 			tableData[counter][14] = 0;        // [i][14] CALC: not used     0    
 			tableData[counter][15] = 0;        // [i][15] CALC: not used     0    
 			// create index to make retrieving index easily
-			//tableIndex[11*d1+d2] = counter;
-			//tableIndex[11*d2+d1] = counter;
+			tableIndex[11*d1+d2] = counter;
+			tableIndex[11*d2+d1] = counter;
 			counter++;
 		}
 	}
 	localStorage.setItem("localStorageTableData",   JSON.stringify(tableData));
-	//localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex));
+	localStorage.setItem("localStorageTableIndex",  JSON.stringify(tableIndex));
 	// mission nr
 	missionNr = 0 ;
 	localStorage.setItem("localStorageMissionNumber", missionNr);
@@ -1105,7 +1105,6 @@ $(document).on("pagecreate","#PAGE_TEST_PERFORM",function(){
  	var fontSizeCell   = parseInt( idealHeighCell * 4/10 , 10 );
  	console.log("performTest windowHeight = "+windowHeight+" , so resize the cell height to "+idealHeighCell+' with font size '+ fontSizeCell );
  	$('.testPerformButtonDigitlike').css({'height': idealHeighCell, 'line-height': ''+idealHeighCell+'px', 'font-size': ''+fontSizeCell+'px'});
- 	$('.testPerformQuestionAnswer').css({'height': idealHeighCell, 'line-height': ''+idealHeighCell+'px', 'font-size': ''+fontSizeCell+'px'});
  	
  	  
   $(".testPerformButtonDigit").on("touchstart",function(e){
